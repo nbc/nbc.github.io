@@ -1,0 +1,35 @@
+---
+title: "Comparer des performances DuckDB/arrow"
+description: "Comment évaluer la mémoire et le CPU de traitements long en duckdb/arrow"
+date: 07-10-2025
+categories: [timemoir, benchmark]
+image: https://duckdb.org/images/logo-dl/DuckDB_Logo-horizontal.svg
+draft: false # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
+---
+
+Quand il s'agit de comparer des façons de faire, l'idéal est de lancer le code dans des outils de benchmarks mais les outils "classiques" de R ne sont pas adaptés à la comparaison de code `duckdb` et/ou `arrow` :
+
+- `tictoc` ne retourne que le temps
+- `bench` ne voit pas les allocations mémoires de duckdb et arrow
+- ...
+
+Dans mes articles, j'utiliserais régulièrement [timemoir](https://github.com/nbc/timemoir) écrit exprès pour ce genre de comparatifs :
+
+```{r}
+library(timemoir)
+
+test_function <- function(n) {
+  x <- rnorm(n); mean(x)
+}
+
+timemoir(
+  test_function(1e3),
+  test_function(1e6),
+  test_function(1e8)
+) |> 
+  kableExtra::kable()
+```
+
+---
+
+Cela dit il ne s'agit pas de "vrais" benchmarks rigoureux, bien au delà des objectifs de ce blog mais de comparaisons rapides, destinées à se faire une idée approximative des performances relatives.

@@ -1,0 +1,9 @@
+---
+title: "About"
+---
+
+Je ne suis pas statisticien mais en tant que bon geek j'aime bien fouiller dans les entrailles de `duckdb` et de `R`. 
+
+Après avoir produit un certain nombre de snippets dans différents gitlab, j'essaye de centraliser mes notes (plus ou moins) en vrac sur ce site. Aucune garantie de régularité, (à priori) pas de longs posts à la mode des années 2000/2010 mais plutôt un micro-blogging quand je trouverais des sujets intéressants.
+
+Le contenu de ce blog est 

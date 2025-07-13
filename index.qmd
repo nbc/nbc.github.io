@@ -1,0 +1,7 @@
+---
+title: "Duck"
+---
+
+A site about duck, R and other things
+
+[my blog](posts.qmd)

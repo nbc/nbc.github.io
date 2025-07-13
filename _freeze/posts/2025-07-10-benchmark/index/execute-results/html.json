@@ -1,0 +1,15 @@
+{
+  "hash": "a6929997c1815e30b4ef965d094b0de2",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Comparer des performances DuckDB/arrow\"\ndescription: \"Comment évaluer la mémoire et le CPU de traitements long en duckdb/arrow\"\ndate: 07-10-2025\ncategories: [timemoir, benchmark]\nimage: https://duckdb.org/images/logo-dl/DuckDB_Logo-horizontal.svg\ndraft: false # setting this to `true` will prevent your post from appearing on your listing page until you're ready!\n---\n\n\n\nQuand il s'agit de comparer des façons de faire, l'idéal est de lancer le code dans des outils de benchmarks mais les outils \"classiques\" de R ne sont pas adaptés à la comparaison de code `duckdb` et/ou `arrow` :\n\n- `tictoc` ne retourne que le temps\n- `bench` ne voit pas les allocations mémoires de duckdb et arrow\n- ...\n\nDans mes articles, j'utiliserais régulièrement [timemoir](https://github.com/nbc/timemoir) écrit exprès pour ce genre de comparatifs :\n\n\n\n::: {.cell}\n\n```{.r .cell-code}\nlibrary(timemoir)\n\ntest_function <- function(n) {\n  x <- rnorm(n); mean(x)\n}\n\ntimemoir(\n  test_function(1e3),\n  test_function(1e6),\n  test_function(1e8)\n) |> \n  kableExtra::kable()\n```\n\n\n\n\n::: {.cell-output-display}\n\n\n|fname                | duration|error | start_mem| max_mem| cpu_user| cpu_sys|\n|:--------------------|--------:|:-----|---------:|-------:|--------:|-------:|\n|test_function(1000)  |    0.000|NA    |    110936|  111192|    0.000|   0.000|\n|test_function(1e+06) |    0.027|NA    |    110808|  110168|    0.026|   0.000|\n|test_function(1e+08) |    2.625|NA    |    110808|  893144|    2.355|   0.269|\n\n\n:::\n:::\n\n\n\n---\n\nCela dit il ne s'agit pas de \"vrais\" benchmarks rigoureux, bien au delà des objectifs de ce blog mais de comparaisons rapides, destinées à se faire une idée approximative des performances relatives.\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

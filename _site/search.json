@@ -1,0 +1,30 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "a-duck-site",
+    "section": "",
+    "text": "A site about duck, R and other things\nmy blog"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "posts.html",
+    "href": "posts.html",
+    "title": "My Blog",
+    "section": "",
+    "text": "to arrow bad/duckplyr good\n\n\n\nduckdb\n\n\narrow\n\n\n\ncomment utiliser arrow::to_arrow est une très mauvaise idée avec dplyr::tbl\n\n\n\nNicolas Chuche\n\n\nOct 7, 2025\n\n\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "posts/2025-07-10-to_arrow_bad/index.html",
+    "href": "posts/2025-07-10-to_arrow_bad/index.html",
+    "title": "to arrow bad/duckplyr good",
+    "section": "",
+    "text": "Jusqu’à il y a peu, une syntaxe souvent recommandée pour écrire un fichier parquet après des ordres dplyr::tbl était :\n\ntbl(con, \"...\") |&gt;\n   arrow::to_arrow() |&gt;\n   arrow::write_dataset(\"mon_dataset\")\n\nCette syntaxe fonctionne toujours mais est beaucoup moins efficace que d’utiliser duckplyr :\n\ncon &lt;- dbConnect(duckdb())\n\ntbl(con, \"read_parquet('geo.parquet')\") |&gt;\n  duckplyr::as_duckdb_tibble() |&gt;\n  duckplyr::compute_parquet(\"my_tbl.parquet\")\n\nVoici les résultats de tests de différentes façons de faire classiques (et le code pour les relancer chez vous ci-dessous) :\n\ninstall.packages(\"duckplyr\")\ndevtools::install_github(\"nbc/timemoir\")\n\n\nlibrary(duckdb)\n\nLe chargement a nécessité le package : DBI\n\nlibrary(timemoir)\n\nif (!file.exists(\"geo.parquet\")) {\n  download.file(\"https://static.data.gouv.fr/resources/sirene-geolocalise-parquet/20240107-143656/sirene2024-geo.parquet\", \"geo.parquet\")\n}\n\nwith_copy_to &lt;- function() {\n  con &lt;- dbConnect(duckdb())\n  \n  dbExecute(con, \"COPY (FROM read_parquet('geo.parquet')) TO 'test.parquet' (FORMAT PARQUET, COMPRESSION ZSTD)\")\n}\n\nwith_to_arrow &lt;- function() {\n  con &lt;- dbConnect(duckdb())\n  \n  tbl(con, \"read_parquet('geo.parquet')\") |&gt;\n    arrow::to_arrow() |&gt;\n    write_dataset('test', compression='zstd')\n}\n\nwith_duckplyr &lt;- function() {\n  con &lt;- dbConnect(duckdb())\n  \n  \n  tbl(con, \"read_parquet('geo.parquet')\") |&gt;\n    duckplyr::as_duckdb_tibble() |&gt;\n    duckplyr::compute_parquet(\"my_tbl.parquet\")\n}\n\ntimemoir(with_to_arrow(), with_copy_to(), with_duckplyr())\n\n# A tibble: 3 × 7\n  fname           duration error              start_mem max_mem cpu_user cpu_sys\n  &lt;chr&gt;              &lt;dbl&gt; &lt;chr&gt;                  &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;\n1 with_to_arrow()    NA    \"impossible de tr…        NA      NA     NA     NA   \n2 with_copy_to()      6.76  &lt;NA&gt;                 142336 7193104     51.6    5.15\n3 with_duckplyr()    NA    \"impossible de tr…        NA      NA     NA     NA   \n\n\n\n\n\nCitationBibTeX citation:@online{chuche2025,\n  author = {Chuche, Nicolas},\n  title = {To Arrow Bad/Duckplyr Good},\n  date = {2025-10-07},\n  url = {https://samanthacsik.github.io/posts/2022-10-24-my-blog-post/},\n  langid = {en}\n}\nFor attribution, please cite this work as:\nChuche, Nicolas. 2025. “To Arrow Bad/Duckplyr Good.”\nOctober 7, 2025. https://samanthacsik.github.io/posts/2022-10-24-my-blog-post/."
+  }
+]

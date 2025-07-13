@@ -1,0 +1,135 @@
+---
+title: "de duckdb à st_to_sf"
+description: "Comment convertir une extraction de duckdb en objet `sf`"
+date: 07-10-2025
+categories: [duckdb, arrow, sf, geoarrow]
+image: https://duckdb.org/images/logo-dl/DuckDB_Logo-horizontal.svg
+draft: false # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
+---
+
+Jusqu'à maintenant, générer un dataframe SF à partir d'une requête duckdb imposait :
+
+1. d'utiliser `ST_AsWKB` ou `ST_AsText` sur la colonne géométrie
+2. de matérialiser les données pour les transférer à `sf::st_as_sf`
+
+Avec les versions récentes de duckdb, de l'extension spatial et du package geoarrow, vous pouvez lui demander de générer une donnée réutilisable directement par {geoarrow} : 
+
+``` r
+library(duckdb)
+library(geoarrow)
+library(sf)
+library(dplyr)
+
+con <- dbConnect(duckdb())
+dbExecute(con, "LOAD spatial;")
+dbExecute(con, "CALL register_geoarrow_extensions()")
+
+dplyr::tbl(con, sql("SELECT geometry FROM read_parquet('~/etude-duckdb-sig/geo.parquet') LIMIT 5")) |>
+  arrow::to_arrow() |>
+  st_as_sf(crs=st_crs(2154))
+```
+
+Et c'est **beaucoup** plus rapide que toutes les autres méthodes (résultat du script ci-dessous) : 
+
+```
+# A tibble: 4 × 5
+  fname                    duration error start_mem  max_mem
+  <chr>                       <dbl> <chr>     <dbl>    <dbl>
+1 with_register_geoarrow()     46.0 NA       338468 25641244
+2 with_st_read()              402.  NA       338388 24356248
+3 with_get_query_aswkb()      423.  NA       338472 24856088
+4 with_get_query_astxt()      211.  NA       338580 24330400
+```
+
+```{r}
+#| eval: false
+library(arrow)
+library(duckdb)
+library(sf)
+library(dplyr)
+library(timemoir)
+
+sample_size <- 1e8
+
+if (!file.exists("geo.parquet")) {
+  download.file("https://static.data.gouv.fr/resources/sirene-geolocalise-parquet/20240107-143656/sirene2024-geo.parquet", "geo.parquet")
+}
+
+with_register_geoarrow <- function() {
+  library(geoarrow)
+  
+  conn_ddb <- dbConnect(duckdb())
+  dbExecute(conn_ddb, "INSTALL spatial;")
+  dbExecute(conn_ddb, "LOAD spatial;")
+  dbExecute(conn_ddb, "CALL register_geoarrow_extensions()")
+  
+  query <- dplyr::tbl(conn_ddb, sql(glue("SELECT * FROM read_parquet('geo.parquet') LIMIT {sample_size}"))) |>
+    arrow::to_arrow() |>
+    st_as_sf(crs=st_crs(2154))
+  
+  dbDisconnect(conn_ddb, shutdown = TRUE)
+}
+
+with_st_read <- function() {
+  conn_ddb <- dbConnect(duckdb())
+  on.exit(dbDisconnect(conn_ddb, shutdown = TRUE))
+  dbExecute(conn_ddb, "INSTALL spatial;")
+  dbExecute(conn_ddb, "LOAD spatial;")
+  
+  a <- st_read(
+    conn_ddb, 
+    query=glue(
+      "SELECT * REPLACE(geometry.ST_ASWKB() AS geometry) FROM read_parquet('geo.parquet') 
+      WHERE geometry IS NOT NULL LIMIT {sample_size}"
+    ), 
+    geometry_column = "geometry") |>
+    st_set_crs(2154)
+  dbDisconnect(conn_ddb, shutdown = TRUE)
+}
+
+with_get_query_aswkb <- function() {
+  conn_ddb <- dbConnect(duckdb())
+  on.exit(dbDisconnect(conn_ddb, shutdown = TRUE))
+  dbExecute(conn_ddb, "INSTALL spatial;")
+  dbExecute(conn_ddb, "LOAD spatial;")
+  
+  query <- dbGetQuery(
+    conn_ddb, 
+    glue(
+      "
+      SELECT * REPLACE(geometry.ST_ASWKB() AS geometry) FROM read_parquet('geo.parquet') 
+      WHERE geometry IS NOT NULL LIMIT {sample_size}
+      "
+    )
+  ) |>
+    sf::st_as_sf(crs = st_crs(2154))
+  dbDisconnect(conn_ddb, shutdown = TRUE)
+}
+
+with_get_query_astxt <- function() {
+  conn_ddb <- dbConnect(duckdb())
+  on.exit(dbDisconnect(conn_ddb, shutdown = TRUE))
+  dbExecute(conn_ddb, "INSTALL spatial;")
+  dbExecute(conn_ddb, "LOAD spatial;")
+  
+  query <- dbGetQuery(
+    conn_ddb, 
+    glue(
+      "
+      SELECT * REPLACE(geometry.ST_ASText() AS geometry) FROM read_parquet('geo.parquet')
+      WHERE geometry IS NOT NULL LIMIT {sample_size}
+      "
+    )
+  ) |>
+    sf::st_as_sf(wkt = "geometry", crs = st_crs(2154))
+}
+
+res <- timemoir(
+  with_register_geoarrow(), 
+  with_st_read(),
+  with_get_query_aswkb(),
+  with_get_query_astxt()) |>
+  gt()
+```
+
+[Source](https://youtu.be/tjNEoIYr_ag?t=1641)

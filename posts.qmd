@@ -1,0 +1,11 @@
+---
+title: "Notes en vrac"
+listing: 
+  contents: "**/*/index.qmd"
+  type: default
+  sort: "date desc"
+  categories: true
+page-layout: full
+title-block-banner: false
+toc: true
+---

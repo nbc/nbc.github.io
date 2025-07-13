@@ -1,0 +1,30 @@
+project:
+  type: website
+  output-dir: docs
+  
+website:
+  title: "Au sujet de duckdb, de R et de tout le reste"
+  site-url: https://nbc.github.io
+  description: Quelques expérimentations généralement sur les données massives
+  page-footer:
+    left: |
+      Sauf mention contraire, le contenu est sous licence
+      [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+    right: "© 2025 Nicolas Chuche"  
+  navbar:
+    right:
+      - href: index.qmd
+        text: Home
+      - posts.qmd # add your listing page file to your navbar, just like you would any other new web page        
+      - about.qmd
+
+format:
+  html:
+    theme:
+      - flatly
+      - brand
+    css: styles.css
+    toc: true
+    license: "CC BY 4.0"
+
+
