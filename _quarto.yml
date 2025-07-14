@@ -10,13 +10,13 @@ website:
     left: |
       Sauf mention contraire, le contenu est sous licence
       [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-    right: "© 2025 Nicolas Chuche"  
+    right: "© 2025 NBC"  
   navbar:
-    right:
+    left:
       - href: index.qmd
         text: Home
-      - posts.qmd # add your listing page file to your navbar, just like you would any other new web page        
-      - about.qmd
+      - posts.qmd   
+  back-to-top-navigation: true
 
 format:
   html:
@@ -25,6 +25,5 @@ format:
       - brand
     css: styles.css
     toc: true
-    license: "CC BY 4.0"
 
 
