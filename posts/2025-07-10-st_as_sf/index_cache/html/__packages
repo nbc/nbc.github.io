@@ -1,6 +1,8 @@
 DBI
 duckdb
+geoarrow
+sf
 dplyr
 arrow
-kableExtra
 timemoir
+glue

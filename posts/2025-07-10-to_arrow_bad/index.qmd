@@ -1,7 +1,7 @@
 ---
-title: "to arrow bad/duckplyr good"
+title: "Pourquoi éviter arrow::to_arrow() avec DuckDB + dplyr"
 description: "comment utiliser `arrow::to_arrow` est une très mauvaise idée avec `dplyr::tbl`"
-date: 07-10-2025
+date: 2025-07-11
 categories: [duckdb, arrow]
 image: https://duckplyr.tidyverse.org/logo.png
 draft: false # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
@@ -29,7 +29,7 @@ tbl(con, "read_parquet('geo.parquet')") |>
   duckplyr::compute_parquet("my_tbl.parquet")
 ```  
 
-# Une comparaison rapide
+## Une comparaison rapide
 
 Voici les résultats de tests de différentes façons de faire classiques (et le code pour les relancer chez vous ci-dessous) :
 
@@ -41,7 +41,7 @@ Voici les résultats de tests de différentes façons de faire classiques (et le
 #| warning: false
 #| cache: true
 #| code-fold: true
-#| code-summary: "Montrez moi le code du benchmark"
+#| code-summary: "Montre moi le code du benchmark"
 library(duckdb)
 library(dplyr)
 library(arrow)
@@ -83,15 +83,26 @@ with_duckplyr <- function() {
 }
 
 #| cache: true
-timemoir(with_arrow(), 
-         with_copy_to(), 
-         with_duckplyr()) |>
+res <- timemoir(
+  with_arrow(), 
+  with_copy_to(), 
+  with_duckplyr()
+)
+
+res |>
   kableExtra::kable()
+plot(res)
 ```
 
-(Sur ma machine) La version `duckplyr` est quasiment 4 fois plus rapide que la version `arrow`, à égalité avec la méthode pure duckdb
+---
 
+Sur le serveur que j'utilise, la version `duckplyr` est **6 fois plus rapide** que la version `arrow` et consomme **deux fois moins de mémoire**, à égalité avec la méthode pure duckdb.
 
+## Conclusion
+
+Si vous utilisez dplyr, arrêtez d'utiliser `to_arrow` et passez à `duckplyr`
+
+---
 
 ::: {.callout-note collapse=true}
 ## Information de session

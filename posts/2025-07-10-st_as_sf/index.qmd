@@ -1,53 +1,66 @@
 ---
 title: "de duckdb à st_to_sf"
 description: "Comment convertir une extraction de duckdb en objet `sf`"
-date: 07-10-2025
+date: 2025-07-12
 categories: [duckdb, arrow, sf, geoarrow]
 image: https://duckdb.org/images/logo-dl/DuckDB_Logo-horizontal.svg
 draft: false # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
 ---
 
-Jusqu'à maintenant, générer un dataframe SF à partir d'une requête duckdb imposait :
+Jusqu'à récemment, générer un dataframe SF à partir d'une requête duckdb imposait :
 
 1. d'utiliser `ST_AsWKB` ou `ST_AsText` sur la colonne géométrie
 2. de matérialiser les données pour les transférer à `sf::st_as_sf`
 
-Avec les versions récentes de duckdb, de l'extension spatial et du package geoarrow, vous pouvez lui demander de générer une donnée réutilisable directement par {geoarrow} : 
-
-``` r
-library(duckdb)
-library(geoarrow)
-library(sf)
-library(dplyr)
-
-con <- dbConnect(duckdb())
-dbExecute(con, "LOAD spatial;")
-dbExecute(con, "CALL register_geoarrow_extensions()")
-
-dplyr::tbl(con, sql("SELECT geometry FROM read_parquet('~/etude-duckdb-sig/geo.parquet') LIMIT 5")) |>
-  arrow::to_arrow() |>
-  st_as_sf(crs=st_crs(2154))
-```
-
-Et c'est **beaucoup** plus rapide que toutes les autres méthodes (résultat du script ci-dessous) : 
-
-```
-# A tibble: 4 × 5
-  fname                    duration error start_mem  max_mem
-  <chr>                       <dbl> <chr>     <dbl>    <dbl>
-1 with_register_geoarrow()     46.0 NA       338468 25641244
-2 with_st_read()              402.  NA       338388 24356248
-3 with_get_query_aswkb()      423.  NA       338472 24856088
-4 with_get_query_astxt()      211.  NA       338580 24330400
-```
+Avec les versions récentes de duckdb, de l'extension spatial et du package geoarrow, vous pouvez lui demander de générer une donnée réutilisable directement par `geoarrow` : 
 
 ```{r}
-#| eval: false
+#| label: example
+#| warning: false
+library(geoarrow)
+library(duckdb)
+library(sf)
+
+con <- dbConnect(duckdb())
+
+url <- "https://static.data.gouv.fr/resources/sirene-geolocalise-parquet/20240107-143656/sirene2024-geo.parquet"
+
+x <- dbExecute(con, "LOAD spatial;")
+x <- dbExecute(con, "LOAD httpfs;")
+x <- dbExecute(con, "CALL register_geoarrow_extensions()") # <1>
+
+dplyr::tbl(con, dplyr::sql(glue::glue("SELECT geometry 
+                                       FROM read_parquet('{url}')
+                                       LIMIT 5"))) |> # <2>
+  arrow::to_arrow() |> # <3>
+  st_as_sf(crs=st_crs(2154)) # <4>
+```
+
+1. demande à duckdb spatial d'ajouter les métadonnées geoarrow dans les colonnes de type géométrie
+2. grace à la commande précédente, cette ligne va retourner des géométries lisibles par geoarrow
+3. cette ligne transforme l'objet en un objet arrow
+4. geoarrow surcharge la fonction `st_as_sf` pour qu'elle puisse lire directement l'objet arrow
+
+## Une comparaison rapide
+
+Et c'est **beaucoup** plus rapide que toutes les autres méthodes : 
+
+
+```{r}
+#| label: benchmark
+#| warning: false
+#| output: false
+#| code-fold: true
+#| code-summary: "Montre moi le code du benchmark"
+#| cache: true
+
 library(arrow)
 library(duckdb)
 library(sf)
 library(dplyr)
+library(glue)
 library(timemoir)
+library(geoarrow)
 
 sample_size <- 1e8
 
@@ -56,10 +69,7 @@ if (!file.exists("geo.parquet")) {
 }
 
 with_register_geoarrow <- function() {
-  library(geoarrow)
-  
   conn_ddb <- dbConnect(duckdb())
-  dbExecute(conn_ddb, "INSTALL spatial;")
   dbExecute(conn_ddb, "LOAD spatial;")
   dbExecute(conn_ddb, "CALL register_geoarrow_extensions()")
   
@@ -73,7 +83,6 @@ with_register_geoarrow <- function() {
 with_st_read <- function() {
   conn_ddb <- dbConnect(duckdb())
   on.exit(dbDisconnect(conn_ddb, shutdown = TRUE))
-  dbExecute(conn_ddb, "INSTALL spatial;")
   dbExecute(conn_ddb, "LOAD spatial;")
   
   a <- st_read(
@@ -90,7 +99,6 @@ with_st_read <- function() {
 with_get_query_aswkb <- function() {
   conn_ddb <- dbConnect(duckdb())
   on.exit(dbDisconnect(conn_ddb, shutdown = TRUE))
-  dbExecute(conn_ddb, "INSTALL spatial;")
   dbExecute(conn_ddb, "LOAD spatial;")
   
   query <- dbGetQuery(
@@ -109,7 +117,6 @@ with_get_query_aswkb <- function() {
 with_get_query_astxt <- function() {
   conn_ddb <- dbConnect(duckdb())
   on.exit(dbDisconnect(conn_ddb, shutdown = TRUE))
-  dbExecute(conn_ddb, "INSTALL spatial;")
   dbExecute(conn_ddb, "LOAD spatial;")
   
   query <- dbGetQuery(
@@ -123,13 +130,33 @@ with_get_query_astxt <- function() {
   ) |>
     sf::st_as_sf(wkt = "geometry", crs = st_crs(2154))
 }
+```
 
+```{r}
+#| label: output_benchmark
+#| cache: true
 res <- timemoir(
   with_register_geoarrow(), 
   with_st_read(),
   with_get_query_aswkb(),
-  with_get_query_astxt()) |>
-  gt()
+  with_get_query_astxt())
+
+res |>
+  kableExtra::kable()
+
+plot(res)
 ```
 
-[Source](https://youtu.be/tjNEoIYr_ag?t=1641)
+## Quelques liens
+
+On ne trouve pas grand chose sur cette commande 
+
+* [Un webinaire du R consortium](https://youtu.be/tjNEoIYr_ag?t=1641)
+* [Un ticket de geoarrow](https://github.com/duckdb/duckdb-spatial/issues/589)
+
+::: {.callout-note collapse=true}
+## Information de session
+```{r}
+devtools::session_info()
+```
+:::

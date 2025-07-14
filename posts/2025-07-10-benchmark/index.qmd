@@ -1,7 +1,7 @@
 ---
 title: "Comparer des performances DuckDB/arrow"
 description: "Comment évaluer la mémoire et le CPU de traitements long en duckdb/arrow"
-date: 07-10-2025
+date: 2025-07-10
 categories: [timemoir, benchmark]
 image: https://duckdb.org/images/logo-dl/DuckDB_Logo-horizontal.svg
 draft: false # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
@@ -33,3 +33,10 @@ timemoir(
 ---
 
 Cela dit il ne s'agit pas de "vrais" benchmarks rigoureux, bien au delà des objectifs de ce blog mais de comparaisons rapides, destinées à se faire une idée approximative des performances relatives.
+
+::: {.callout-note collapse=true}
+## Information de session
+```{r}
+devtools::session_info()
+```
+:::
