@@ -157,6 +157,7 @@ On ne trouve pas grand chose sur cette commande
 ::: {.callout-note collapse=true}
 ## Information de session
 ```{r}
-devtools::session_info()
+#| label: session_info
+devtools::session_info(pkgs = "attached")
 ```
 :::

@@ -16,18 +16,23 @@ Quand il s'agit de comparer des façons de faire, l'idéal est de lancer le code
 Dans mes articles, j'utiliserais régulièrement [timemoir](https://github.com/nbc/timemoir) écrit exprès pour ce genre de comparatifs :
 
 ```{r}
+#| label: timemoir
 library(timemoir)
 
 test_function <- function(n) {
   x <- rnorm(n); mean(x)
 }
 
-timemoir(
-  test_function(1e3),
-  test_function(1e6),
+res <- timemoir(
+  test_function(1.2e7),
+  test_function(4e7),
   test_function(1e8)
-) |> 
+)
+
+res |> 
   kableExtra::kable()
+
+plot(res)
 ```
 
 ---
@@ -37,6 +42,7 @@ Cela dit il ne s'agit pas de "vrais" benchmarks rigoureux, bien au delà des obj
 ::: {.callout-note collapse=true}
 ## Information de session
 ```{r}
-devtools::session_info()
+#| label: session_info
+devtools::session_info(pkgs = "attached")
 ```
 :::

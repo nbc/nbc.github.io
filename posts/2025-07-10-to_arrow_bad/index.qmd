@@ -1,9 +1,9 @@
 ---
 title: "Pourquoi éviter arrow::to_arrow() avec DuckDB + dplyr"
-description: "comment utiliser `arrow::to_arrow` est une très mauvaise idée avec `dplyr::tbl`"
+description: "Pourquoi utiliser `arrow::to_arrow` est une mauvaise idée avec `dplyr::tbl`"
 date: 2025-07-11
 categories: [duckdb, arrow]
-image: https://duckplyr.tidyverse.org/logo.png
+image: https://duckplyr.tidyverse.org/logo.png 
 draft: false # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
 ---
 
@@ -17,7 +17,7 @@ tbl(con, "read_parquet('geo.parquet')") |>
   arrow::write_dataset("mon_dataset")
 ```
 
-Cette syntaxe fonctionne toujours mais le nouveau package [duckplyr](https://duckplyr.tidyverse.org/index.html) est beaucoup plus efficace :
+Cette syntaxe fonctionne toujours mais le nouveau package [duckplyr](https://duckplyr.tidyverse.org/index.html) propose une méthode beaucoup plus efficace :
 
 ```{r}
 #| eval: false
@@ -25,9 +25,14 @@ con <- dbConnect(duckdb())
 
 tbl(con, "read_parquet('geo.parquet')") |>
   ...
-  duckplyr::as_duckdb_tibble() |>
-  duckplyr::compute_parquet("my_tbl.parquet")
+  duckplyr::as_duckdb_tibble() |> # <1>
+  duckplyr::compute_parquet("my_tbl.parquet") # <2>
 ```  
+
+1. converti l'objet retourné par `tbl` en objet lisible par `duckplyr`
+2. écrit le fichier parquet
+
+Les deux lignes fonctionnent de la même façon que celle de `arrow` en étant **beaucoup plus efficace**.
 
 ## Une comparaison rapide
 
@@ -39,7 +44,6 @@ Voici les résultats de tests de différentes façons de faire classiques (et le
 
 ```{r}
 #| warning: false
-#| cache: true
 #| code-fold: true
 #| code-summary: "Montre moi le code du benchmark"
 library(duckdb)
@@ -81,7 +85,10 @@ with_duckplyr <- function() {
     duckplyr::as_duckdb_tibble() |>
     duckplyr::compute_parquet("my_tbl.parquet")
 }
+```
 
+```{r}
+#| label: output_benchmark
 #| cache: true
 res <- timemoir(
   with_arrow(), 
@@ -102,11 +109,16 @@ Sur le serveur que j'utilise, la version `duckplyr` est **6 fois plus rapide** q
 
 Si vous utilisez dplyr, arrêtez d'utiliser `to_arrow` et passez à `duckplyr`
 
+## Quelques liens
+
+* la [documentation de duckplyr](https://duckplyr.tidyverse.org/articles/large.html)
+
 ---
 
 ::: {.callout-note collapse=true}
 ## Information de session
 ```{r}
-devtools::session_info()
+#| label: session_info
+devtools::session_info(pkgs = "attached")
 ```
 :::
