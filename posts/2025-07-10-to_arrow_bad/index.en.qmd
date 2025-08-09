@@ -1,0 +1,123 @@
+---
+title: "Comparison between arrow::to_arrow() and duckplyr for writing Parquet files"
+description: "Why You Should Avoid arrow::to_arrow() with DuckDB + dplyr"
+lang: en
+date: 2025-07-11
+categories: [duckdb, arrow]
+image: https://duckplyr.tidyverse.org/logo.png 
+draft: false
+---
+
+A commonly recommended approach to write a Parquet file after using `dplyr::tbl` with `duckdb` is to use `arrow::to_arrow` with `arrow::write_dataset` or `arrow::write_parquet`:
+
+```{r}
+#| eval: false
+tbl(con, "read_parquet('geo.parquet')") |>
+  ...
+  arrow::to_arrow() |>
+  arrow::write_dataset("my_dataset")
+```
+
+While this syntax works, the new [duckplyr](https://duckplyr.tidyverse.org/index.html) package offers a **much more efficient** alternative:
+
+```{r}
+#| eval: false
+con <- dbConnect(duckdb())
+
+tbl(con, "read_parquet('geo.parquet')") |>
+  ...
+  duckplyr::as_duckdb_tibble() |> # <1>
+  duckplyr::compute_parquet("my_tbl.parquet") # <2>
+```
+
+1. [`duckplyr::as_duckdb_tibble`](https://duckplyr.tidyverse.org/reference/duckdb_tibble.html) converts the object returned by `tbl()` into a `duckplyr` objet
+2. [`duckplyr::compute_parquet`](https://duckplyr.tidyverse.org/reference/compute_parquet.html) writes the Parquet file
+
+These two lines achieve the same result as the Arrow version, but using `duckplyr` is **much more efficient**.
+
+## A Quick Benchmark
+
+Here are the results from benchmarking three common methods (with full reproducible code below):
+
+- `with_arrow`: using `arrow::to_arrow()` + `write_dataset()`
+- `with_duckplyr`: using `duckplyr::as_duckdb_tibble()` + `compute_parquet()`
+- `with_copy_to`: using DuckDB’s native `COPY ... TO ...` as a baseline
+
+```{r}
+#| warning: false
+#| code-fold: true
+#| code-summary: "Show me the benchmark code"
+library(duckdb)
+library(dplyr)
+library(arrow)
+library(kableExtra)
+library(timemoir)
+
+if (!file.exists("geo.parquet")) {
+  download.file("https://static.data.gouv.fr/resources/sirene-geolocalise-parquet/20240107-143656/sirene2024-geo.parquet", "geo.parquet")
+}
+
+# Full DuckDB method
+with_copy_to <- function() {
+  con <- dbConnect(duckdb())
+  on.exit(dbDisconnect(con, shutdown = TRUE))
+
+  dbExecute(con, "COPY (FROM read_parquet('geo.parquet')) TO 'test.parquet' (FORMAT PARQUET, COMPRESSION ZSTD)")
+}
+
+# "Historical" version with Arrow
+with_arrow <- function() {
+  con <- dbConnect(duckdb())
+  on.exit(dbDisconnect(con, shutdown = TRUE))
+
+  tbl(con, "read_parquet('geo.parquet')") |>
+    arrow::to_arrow() |>
+    arrow::write_dataset('test', compression='zstd')
+}
+
+# Version using the new duckplyr package
+with_duckplyr <- function() {
+  con <- dbConnect(duckdb())
+  on.exit(dbDisconnect(con, shutdown = TRUE))
+
+  tbl(con, "read_parquet('geo.parquet')") |>
+    duckplyr::as_duckdb_tibble() |>
+    duckplyr::compute_parquet("my_tbl.parquet")
+}
+```
+
+```{r}
+#| label: output_benchmark
+#| cache: true
+res <- timemoir(
+  with_arrow(), 
+  with_copy_to(), 
+  with_duckplyr()
+)
+
+res |>
+  kableExtra::kable()
+plot(res)
+```
+
+---
+
+On the server I use, the `duckplyr` version is **6× faster** than the `arrow` version and uses **half the memory**, performing on par with pure DuckDB.
+
+## Conclusion
+
+If you're working with `dplyr`, stop using `to_arrow()` and switch to `duckplyr` for better performance.
+
+## Useful Links
+
+- [duckplyr documentation](https://duckplyr.tidyverse.org/articles/large.html)
+
+---
+
+::: {.callout-note collapse=true}
+## Session Info
+```{r}
+#| label: session_info
+devtools::session_info(pkgs = "attached")
+```
+:::
