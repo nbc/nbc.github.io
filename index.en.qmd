@@ -1,5 +1,5 @@
 ---
-title: "Duckdb, R and everything"
+title: "Duckdb, R and others"
 lang: en
 ---
 
