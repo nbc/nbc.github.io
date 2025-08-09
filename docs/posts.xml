@@ -5,7 +5,7 @@
       xmlns:dc="http://purl.org/dc/elements/1.1/" 
       version="2.0">
 <channel>
-<title>duckdb, de R et autres</title>
+<title>duckdb, R et autres</title>
 <link>https://nbc.github.io/posts.html</link>
 <atom:link href="https://nbc.github.io/posts.xml" rel="self" type="application/rss+xml"/>
 <description>Quelques notes souvent sur les données massives mais pas que</description>
