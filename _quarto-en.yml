@@ -5,3 +5,5 @@ website:
         text: Home
       - href: posts.qmd   
         text: Blog
+      - href: links.qmd
+        text: Links

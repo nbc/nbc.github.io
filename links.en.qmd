@@ -1,0 +1,19 @@
+---
+title: "Some Links"
+lang: en
+---
+
+Here are some miscellaneous links:
+
+## About R
+
+* [Danielle Navarro's blog](https://blog.djnavarro.net/) which introduced me to Rarrow and Parquet
+* [R bloggers aggregator](https://www.r-bloggers.com/) with many resources
+
+## About DuckDB
+
+* [DuckDB blog](https://duckdb.org/news/): lots of information about the inner workings of DuckDB
+
+## About GeoParquet
+
+* [Chris Holmes' blog](https://cholmes.medium.com/)

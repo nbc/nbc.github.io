@@ -1,0 +1,26 @@
+---
+title: "Quelques liens"
+---
+
+Quelques liens en vracs :
+
+## sur R
+
+* [le blog de Danielle Navarro](https://blog.djnavarro.net/) qui m'a fait découvrir Rarrow et parquet
+* [l'aggrégateur R bloggers](https://www.r-bloggers.com/) avec beaucoup de ressources
+* [la documentation utilitR](https://book.utilitr.org/) [^utilir]
+* [les formations R des ministères de la transition écologique](https://mtes-mct.github.io/parcours-r/) [^parcours-r]
+
+[^utilir]: documentation à laquelle j'ai modestement participé sur les chapitres [duckdb](https://book.utilitr.org/03_Fiches_thematiques/Fiche_duckdb.html) et [arrow](https://book.utilitr.org/03_Fiches_thematiques/Fiche_arrow.html) et [parquet](https://book.utilitr.org/03_Fiches_thematiques/Fiche_import_fichiers_parquet.html)
+
+[^parcours-r]: Je travaille ici
+
+## sur duckdb
+
+* [l'article de Éric Mauvière](https://www.icem7.fr/pedagogie/3-explorations-bluffantes-avec-duckdb-1-interroger-des-fichiers-distants/) qui m'a fait découvrir l'extension spatial
+* [le blog de duckdb](https://duckdb.org/news/) : beaucoup d'informations sur les entrailles de duckdb
+
+## sur geoparquet
+
+* [le blog de Chris Holmes](https://cholmes.medium.com/)
+
