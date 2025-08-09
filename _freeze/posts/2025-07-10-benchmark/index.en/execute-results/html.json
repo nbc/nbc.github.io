@@ -1,0 +1,17 @@
+{
+  "hash": "efb84892311da939974f01581bdcaf9a",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Comparing DuckDB/Arrow Performance\"\ndescription: \"How to evaluate memory and CPU usage for long-running processes in duckdb/arrow\"\nlang: en\ndate: 2025-07-10\ncategories: [timemoir, benchmark]\nimage: https://duckdb.org/images/logo-dl/DuckDB_Logo-horizontal.svg\ndraft: false # setting this to `true` will prevent your post from appearing on your listing page until you're ready!\n---\n\nWhen it comes to comparing different approaches, the ideal scenario is to run the code in benchmarking tools, but the \"classic\" R tools are not well suited for comparing `duckdb` and/or `arrow` code:\n\n- `tictoc` only returns elapsed time\n- `bench` does not detect memory allocations from duckdb and arrow\n- ...\n\nIn my articles, I will regularly use [timemoir](https://github.com/nbc/timemoir), written specifically for this type of comparison:\n\n\n::: {.cell}\n\n```{.r .cell-code}\nlibrary(timemoir)\n\ntest_function <- function(n) {\n  x <- rnorm(n); mean(x)\n}\n\nres <- timemoir(\n  test_function(1.2e7),\n  test_function(4e7),\n  test_function(1e8)\n)\n```\n\n```{.r .cell-code}\nres |> \n  kableExtra::kable()\n```\n\n::: {.cell-output-display}\n\n\n|fname                  | duration|error | start_mem| max_mem| cpu_user| cpu_sys|\n|:----------------------|--------:|:-----|---------:|-------:|--------:|-------:|\n|test_function(1.2e+07) |    1.823|NA    |    110012|  204736|    1.455|   0.137|\n|test_function(4e+07)   |    4.600|NA    |    109296|  423636|    3.996|   0.276|\n|test_function(1e+08)   |    9.564|NA    |    109232|  892384|    9.065|   0.495|\n\n\n:::\n\n```{.r .cell-code}\nplot(res)\n```\n\n::: {.cell-output-display}\n![](index.en_files/figure-html/timemoir-1.png){width=672}\n:::\n:::\n\n\n---\n\nThat said, these are not \"true\" rigorous benchmarks—well beyond the scope of this blog, but rather quick comparisons intended to provide a rough idea of relative performance.\n\n::: {.callout-note collapse=true}\n## Session Information\n\n::: {.cell}\n\n```{.r .cell-code}\ndevtools::session_info(pkgs = \"attached\")\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\n─ Session info ───────────────────────────────────────────────────────────────\n setting  value\n version  R version 4.5.0 (2025-04-11)\n os       Ubuntu 22.04.5 LTS\n system   x86_64, linux-gnu\n ui       X11\n language (EN)\n collate  en_US.UTF-8\n ctype    en_US.UTF-8\n tz       Etc/UTC\n date     2025-08-09\n pandoc   3.7.0.2 @ /usr/bin/ (via rmarkdown)\n quarto   1.7.31 @ /usr/local/bin/quarto\n\n─ Packages ───────────────────────────────────────────────────────────────────\n package  * version    date (UTC) lib source\n timemoir * 0.8.0.9000 2025-08-09 [1] Github (nbc/timemoir@646734a)\n\n [1] /usr/local/lib/R/site-library\n [2] /usr/local/lib/R/library\n * ── Packages attached to the search path.\n\n──────────────────────────────────────────────────────────────────────────────\n```\n\n\n:::\n:::\n\n:::\n",
+    "supporting": [
+      "index.en_files"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

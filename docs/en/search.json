@@ -1,0 +1,100 @@
+[
+  {
+    "objectID": "links.html",
+    "href": "links.html",
+    "title": "Some Links",
+    "section": "",
+    "text": "Here are some miscellaneous links:"
+  },
+  {
+    "objectID": "links.html#about-r",
+    "href": "links.html#about-r",
+    "title": "Some Links",
+    "section": "About R",
+    "text": "About R\n\nDanielle Navarro’s blog which introduced me to Rarrow and Parquet\nR bloggers aggregator with many resources"
+  },
+  {
+    "objectID": "links.html#about-duckdb",
+    "href": "links.html#about-duckdb",
+    "title": "Some Links",
+    "section": "About DuckDB",
+    "text": "About DuckDB\n\nDuckDB blog: lots of information about the inner workings of DuckDB"
+  },
+  {
+    "objectID": "links.html#about-geoparquet",
+    "href": "links.html#about-geoparquet",
+    "title": "Some Links",
+    "section": "About GeoParquet",
+    "text": "About GeoParquet\n\nChris Holmes’ blog"
+  },
+  {
+    "objectID": "posts/2025-07-10-benchmark/index.html",
+    "href": "posts/2025-07-10-benchmark/index.html",
+    "title": "Comparing DuckDB/Arrow Performance",
+    "section": "",
+    "text": "When it comes to comparing different approaches, the ideal scenario is to run the code in benchmarking tools, but the “classic” R tools are not well suited for comparing duckdb and/or arrow code:\n\ntictoc only returns elapsed time\nbench does not detect memory allocations from duckdb and arrow\n…\n\nIn my articles, I will regularly use timemoir, written specifically for this type of comparison:\n\nlibrary(timemoir)\n\ntest_function &lt;- function(n) {\n  x &lt;- rnorm(n); mean(x)\n}\n\nres &lt;- timemoir(\n  test_function(1.2e7),\n  test_function(4e7),\n  test_function(1e8)\n)\nres |&gt; \n  kableExtra::kable()\n\n\n\n\n\n\n\n\n\n\n\n\n\nfname\nduration\nerror\nstart_mem\nmax_mem\ncpu_user\ncpu_sys\n\n\n\n\ntest_function(1.2e+07)\n1.823\nNA\n110012\n204736\n1.455\n0.137\n\n\ntest_function(4e+07)\n4.600\nNA\n109296\n423636\n3.996\n0.276\n\n\ntest_function(1e+08)\n9.564\nNA\n109232\n892384\n9.065\n0.495\n\n\n\n\nplot(res)\n\n\n\n\n\n\n\n\n\nThat said, these are not “true” rigorous benchmarks—well beyond the scope of this blog, but rather quick comparisons intended to provide a rough idea of relative performance.\n\n\n\n\n\n\nSession Information\n\n\n\n\n\n\ndevtools::session_info(pkgs = \"attached\")\n\n─ Session info ───────────────────────────────────────────────────────────────\n setting  value\n version  R version 4.5.0 (2025-04-11)\n os       Ubuntu 22.04.5 LTS\n system   x86_64, linux-gnu\n ui       X11\n language (EN)\n collate  en_US.UTF-8\n ctype    en_US.UTF-8\n tz       Etc/UTC\n date     2025-08-09\n pandoc   3.7.0.2 @ /usr/bin/ (via rmarkdown)\n quarto   1.7.31 @ /usr/local/bin/quarto\n\n─ Packages ───────────────────────────────────────────────────────────────────\n package  * version    date (UTC) lib source\n timemoir * 0.8.0.9000 2025-08-09 [1] Github (nbc/timemoir@646734a)\n\n [1] /usr/local/lib/R/site-library\n [2] /usr/local/lib/R/library\n * ── Packages attached to the search path.\n\n──────────────────────────────────────────────────────────────────────────────\n\n\n\n\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Duckdb, R and others",
+    "section": "",
+    "text": "I’m not a statistician, but as a software guy, part of my job (sadly, a pretty small part) is helping statisticians wrangle fairly large datasets.\nThis is where I share interesting stuff I’ve picked up along the way or stumbled upon in my reading. You’ll see a lot about R and DuckDB, but not exclusively.\nNo promises on posting frequency or absolute accuracy.\nFor now, it’s all happening in the blog section.\nHeads up: the english part is translated from French with a little help from AI.\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "posts.html",
+    "href": "posts.html",
+    "title": "Blog",
+    "section": "",
+    "text": "From duckdb to st_to_sf\n\n\n\nR\n\nduckdb\n\narrow\n\nsf\n\ngeoarrow\n\n\n\nHow to convert a duckdb extraction into an sf object\n\n\n\n\n\nJul 12, 2025\n\n\nNicolas Chuche\n\n\n\n\n\n\n\n\n\n\n\n\nComparison between arrow::to_arrow() and duckplyr for writing Parquet files\n\n\n\nR\n\nduckdb\n\narrow\n\n\n\nWhy You Should Avoid arrow::to_arrow() with DuckDB + dplyr\n\n\n\n\n\nJul 11, 2025\n\n\nNicolas Chuche\n\n\n\n\n\n\n\n\n\n\n\n\nComparing DuckDB/Arrow Performance\n\n\n\nR\n\nbenchmark\n\n\n\nHow to evaluate memory and CPU usage for long-running processes in duckdb/arrow\n\n\n\n\n\nJul 10, 2025\n\n\nNicolas Chuche\n\n\n\n\n\nNo matching items\n Back to top"
+  },
+  {
+    "objectID": "posts/2025-07-10-st_as_sf/index.html",
+    "href": "posts/2025-07-10-st_as_sf/index.html",
+    "title": "From duckdb to st_to_sf",
+    "section": "",
+    "text": "Until recently, generating an SF dataframe from a duckdb query required:\nWith recent versions of duckdb, the spatial extension, and the geoarrow package, you can now ask duckdb to produce data that can be directly reused by geoarrow:\nlibrary(geoarrow)\nlibrary(duckdb)\nlibrary(sf)\n\ncon &lt;- dbConnect(duckdb())\n\nurl &lt;- \"https://static.data.gouv.fr/resources/sirene-geolocalise-parquet/20240107-143656/sirene2024-geo.parquet\"\n\nx &lt;- dbExecute(con, \"LOAD spatial;\")\nx &lt;- dbExecute(con, \"LOAD httpfs;\")\n1x &lt;- dbExecute(con, \"CALL register_geoarrow_extensions()\")\n\ndplyr::tbl(con, dplyr::sql(glue::glue(\"SELECT geometry \n                                       FROM read_parquet('{url}')\n2                                       LIMIT 5\"))) |&gt;\n3  arrow::to_arrow() |&gt;\n4  st_as_sf(crs=st_crs(2154))\n\n\n1\n\nInstructs duckdb spatial to add geoarrow metadata to geometry-type columns\n\n\n2\n\nThanks to the previous command, this line will return geometries readable by geoarrow\n\n\n3\n\nThis line converts the object into an arrow object\n\n\n4\n\ngeoarrow overrides the st_as_sf function so it can directly read the arrow object\n\n\n\n\nSimple feature collection with 5 features and 0 fields\nGeometry type: POINT\nDimension:     XY\nBounding box:  xmin: 3.735375 ymin: 49.38698 xmax: 3.738175 ymax: 49.39506\nProjected CRS: RGF93 v1 / Lambert-93\n                   geometry\n1 POINT (3.738175 49.39245)\n2 POINT (3.735375 49.38829)\n3 POINT (3.735446 49.39507)\n4 POINT (3.738132 49.38698)\n5 POINT (3.735748 49.38712)"
+  },
+  {
+    "objectID": "posts/2025-07-10-st_as_sf/index.html#a-quick-comparison",
+    "href": "posts/2025-07-10-st_as_sf/index.html#a-quick-comparison",
+    "title": "From duckdb to st_to_sf",
+    "section": "A quick comparison",
+    "text": "A quick comparison\nAnd it’s much faster than all other methods:\n\n\nShow me the benchmark code\nlibrary(arrow)\nlibrary(duckdb)\nlibrary(sf)\nlibrary(dplyr)\nlibrary(glue)\nlibrary(timemoir)\nlibrary(geoarrow)\n\nsample_size &lt;- 1e8\n\nif (!file.exists(\"geo.parquet\")) {\n  download.file(\"https://static.data.gouv.fr/resources/sirene-geolocalise-parquet/20240107-143656/sirene2024-geo.parquet\", \"geo.parquet\")\n}\n\nwith_register_geoarrow &lt;- function() {\n  conn_ddb &lt;- dbConnect(duckdb())\n  dbExecute(conn_ddb, \"LOAD spatial;\")\n  dbExecute(conn_ddb, \"CALL register_geoarrow_extensions()\")\n  \n  query &lt;- dplyr::tbl(conn_ddb, sql(glue(\"SELECT * FROM read_parquet('geo.parquet') LIMIT {sample_size}\"))) |&gt;\n    arrow::to_arrow() |&gt;\n    st_as_sf(crs=st_crs(2154))\n  \n  dbDisconnect(conn_ddb, shutdown = TRUE)\n}\n\nwith_st_read &lt;- function() {\n  conn_ddb &lt;- dbConnect(duckdb())\n  on.exit(dbDisconnect(conn_ddb, shutdown = TRUE))\n  dbExecute(conn_ddb, \"LOAD spatial;\")\n  \n  a &lt;- st_read(\n    conn_ddb, \n    query=glue(\n      \"SELECT * REPLACE(geometry.ST_ASWKB() AS geometry) FROM read_parquet('geo.parquet') \n      WHERE geometry IS NOT NULL LIMIT {sample_size}\"\n    ), \n    geometry_column = \"geometry\") |&gt;\n    st_set_crs(2154)\n  dbDisconnect(conn_ddb, shutdown = TRUE)\n}\n\nwith_get_query_aswkb &lt;- function() {\n  conn_ddb &lt;- dbConnect(duckdb())\n  on.exit(dbDisconnect(conn_ddb, shutdown = TRUE))\n  dbExecute(conn_ddb, \"LOAD spatial;\")\n  \n  query &lt;- dbGetQuery(\n    conn_ddb, \n    glue(\n      \"\n      SELECT * REPLACE(geometry.ST_AsWKB() AS geometry) FROM read_parquet('geo.parquet') \n      WHERE geometry IS NOT NULL LIMIT {sample_size}\n      \"\n    )\n  ) |&gt;\n    sf::st_as_sf(crs = st_crs(2154))\n  dbDisconnect(conn_ddb, shutdown = TRUE)\n}\n\nwith_get_query_astxt &lt;- function() {\n  conn_ddb &lt;- dbConnect(duckdb())\n  on.exit(dbDisconnect(conn_ddb, shutdown = TRUE))\n  dbExecute(conn_ddb, \"LOAD spatial;\")\n  \n  query &lt;- dbGetQuery(\n    conn_ddb, \n    glue(\n      \"\n      SELECT * REPLACE(geometry.ST_AsText() AS geometry) FROM read_parquet('geo.parquet')\n      WHERE geometry IS NOT NULL LIMIT {sample_size}\n      \"\n    )\n  ) |&gt;\n    sf::st_as_sf(wkt = \"geometry\", crs = st_crs(2154))\n}\n\n\n\nres &lt;- timemoir(\n  with_register_geoarrow(), \n  with_st_read(),\n  with_get_query_aswkb(),\n  with_get_query_astxt())\nres |&gt;\n  kableExtra::kable()\n\n\n\n\n\n\n\n\n\n\n\n\n\nfname\nduration\nerror\nstart_mem\nmax_mem\ncpu_user\ncpu_sys\n\n\n\n\nwith_register_geoarrow()\n102.676\nNA\n256252\n26895240\n85.800\n16.457\n\n\nwith_st_read()\n552.807\nNA\n257016\n25266148\n496.485\n54.894\n\n\nwith_get_query_aswkb()\n593.295\nNA\n285444\n25291172\n552.240\n77.263\n\n\nwith_get_query_astxt()\n450.991\nNA\n286640\n24853872\n426.793\n63.129\n\n\n\n\nplot(res)"
+  },
+  {
+    "objectID": "posts/2025-07-10-st_as_sf/index.html#some-useful-links",
+    "href": "posts/2025-07-10-st_as_sf/index.html#some-useful-links",
+    "title": "From duckdb to st_to_sf",
+    "section": "Some useful links",
+    "text": "Some useful links\nThere isn’t much documentation about this command:\n\nA webinar from the R Consortium\n\nA geoarrow issue\n\n\n\n\n\n\n\nSession Information\n\n\n\n\n\n\ndevtools::session_info(pkgs = \"attached\")\n\n─ Session info ───────────────────────────────────────────────────────────────\n setting  value\n version  R version 4.5.0 (2025-04-11)\n os       Ubuntu 22.04.5 LTS\n system   x86_64, linux-gnu\n ui       X11\n language (EN)\n collate  en_US.UTF-8\n ctype    en_US.UTF-8\n tz       Etc/UTC\n date     2025-08-09\n pandoc   3.7.0.2 @ /usr/bin/ (via rmarkdown)\n quarto   1.7.31 @ /usr/local/bin/quarto\n\n─ Packages ───────────────────────────────────────────────────────────────────\n package  * version    date (UTC) lib source\n arrow    * 20.0.0.2   2025-05-26 [1] RSPM (R 4.5.0)\n DBI      * 1.2.3      2024-06-02 [1] RSPM (R 4.5.0)\n dplyr    * 1.1.4      2023-11-17 [1] RSPM (R 4.5.0)\n duckdb   * 1.3.0      2025-06-02 [1] RSPM (R 4.5.0)\n geoarrow * 0.3.0      2025-05-26 [1] RSPM (R 4.5.0)\n glue     * 1.8.0      2024-09-30 [1] RSPM (R 4.5.0)\n sf       * 1.0-21     2025-05-15 [1] RSPM (R 4.5.0)\n timemoir * 0.8.0.9000 2025-08-09 [1] Github (nbc/timemoir@646734a)\n\n [1] /usr/local/lib/R/site-library\n [2] /usr/local/lib/R/library\n * ── Packages attached to the search path.\n\n──────────────────────────────────────────────────────────────────────────────"
+  },
+  {
+    "objectID": "posts/2025-07-10-to_arrow_bad/index.html",
+    "href": "posts/2025-07-10-to_arrow_bad/index.html",
+    "title": "Comparison between arrow::to_arrow() and duckplyr for writing Parquet files",
+    "section": "",
+    "text": "A commonly recommended approach to write a Parquet file after using dplyr::tbl with duckdb is to use arrow::to_arrow with arrow::write_dataset or arrow::write_parquet:\ntbl(con, \"read_parquet('geo.parquet')\") |&gt;\n  ...\n  arrow::to_arrow() |&gt;\n  arrow::write_dataset(\"my_dataset\")\nWhile this syntax works, the new duckplyr package offers a much more efficient alternative:\ncon &lt;- dbConnect(duckdb())\n\ntbl(con, \"read_parquet('geo.parquet')\") |&gt;\n  ...\n1  duckplyr::as_duckdb_tibble() |&gt;\n2  duckplyr::compute_parquet(\"my_tbl.parquet\")\n\n\n1\n\nduckplyr::as_duckdb_tibble converts the object returned by tbl() into a duckplyr objet\n\n2\n\nduckplyr::compute_parquet writes the Parquet file\nThese two lines achieve the same result as the Arrow version, but using duckplyr is much more efficient."
+  },
+  {
+    "objectID": "posts/2025-07-10-to_arrow_bad/index.html#a-quick-benchmark",
+    "href": "posts/2025-07-10-to_arrow_bad/index.html#a-quick-benchmark",
+    "title": "Comparison between arrow::to_arrow() and duckplyr for writing Parquet files",
+    "section": "A Quick Benchmark",
+    "text": "A Quick Benchmark\nHere are the results from benchmarking three common methods (with full reproducible code below):\n\nwith_arrow: using arrow::to_arrow() + write_dataset()\nwith_duckplyr: using duckplyr::as_duckdb_tibble() + compute_parquet()\nwith_copy_to: using DuckDB’s native COPY ... TO ... as a baseline\n\n\n\nShow me the benchmark code\nlibrary(duckdb)\nlibrary(dplyr)\nlibrary(arrow)\nlibrary(kableExtra)\nlibrary(timemoir)\n\nif (!file.exists(\"geo.parquet\")) {\n  download.file(\"https://static.data.gouv.fr/resources/sirene-geolocalise-parquet/20240107-143656/sirene2024-geo.parquet\", \"geo.parquet\")\n}\n\n# Full DuckDB method\nwith_copy_to &lt;- function() {\n  con &lt;- dbConnect(duckdb())\n  on.exit(dbDisconnect(con, shutdown = TRUE))\n\n  dbExecute(con, \"COPY (FROM read_parquet('geo.parquet')) TO 'test.parquet' (FORMAT PARQUET, COMPRESSION ZSTD)\")\n}\n\n# \"Historical\" version with Arrow\nwith_arrow &lt;- function() {\n  con &lt;- dbConnect(duckdb())\n  on.exit(dbDisconnect(con, shutdown = TRUE))\n\n  tbl(con, \"read_parquet('geo.parquet')\") |&gt;\n    arrow::to_arrow() |&gt;\n    arrow::write_dataset('test', compression='zstd')\n}\n\n# Version using the new duckplyr package\nwith_duckplyr &lt;- function() {\n  con &lt;- dbConnect(duckdb())\n  on.exit(dbDisconnect(con, shutdown = TRUE))\n\n  tbl(con, \"read_parquet('geo.parquet')\") |&gt;\n    duckplyr::as_duckdb_tibble() |&gt;\n    duckplyr::compute_parquet(\"my_tbl.parquet\")\n}\n\n\n\nres &lt;- timemoir(\n  with_arrow(), \n  with_copy_to(), \n  with_duckplyr()\n)\nres |&gt;\n  kableExtra::kable()\n\n\n\n\n\n\n\n\n\n\n\n\n\nfname\nduration\nerror\nstart_mem\nmax_mem\ncpu_user\ncpu_sys\n\n\n\n\nwith_arrow()\n132.820\nNA\n155100\n21481404\n159.980\n50.707\n\n\nwith_copy_to()\n32.043\nNA\n162624\n12917092\n171.558\n70.419\n\n\nwith_duckplyr()\nNA\nthere is no package called ‘duckplyr’\nNA\nNA\nNA\nNA\n\n\n\n\nplot(res)\n\nWarning: Removed 3 rows containing missing values or values outside the scale range\n(`geom_col()`).\n\n\n\n\n\n\n\n\n\n\nOn the server I use, the duckplyr version is 6× faster than the arrow version and uses half the memory, performing on par with pure DuckDB."
+  },
+  {
+    "objectID": "posts/2025-07-10-to_arrow_bad/index.html#conclusion",
+    "href": "posts/2025-07-10-to_arrow_bad/index.html#conclusion",
+    "title": "Comparison between arrow::to_arrow() and duckplyr for writing Parquet files",
+    "section": "Conclusion",
+    "text": "Conclusion\nIf you’re working with dplyr, stop using to_arrow() and switch to duckplyr for better performance."
+  },
+  {
+    "objectID": "posts/2025-07-10-to_arrow_bad/index.html#useful-links",
+    "href": "posts/2025-07-10-to_arrow_bad/index.html#useful-links",
+    "title": "Comparison between arrow::to_arrow() and duckplyr for writing Parquet files",
+    "section": "Useful Links",
+    "text": "Useful Links\n\nduckplyr documentation\n\n\n\n\n\n\n\n\nSession Info\n\n\n\n\n\n\ndevtools::session_info(pkgs = \"attached\")\n\n─ Session info ───────────────────────────────────────────────────────────────\n setting  value\n version  R version 4.5.0 (2025-04-11)\n os       Ubuntu 22.04.5 LTS\n system   x86_64, linux-gnu\n ui       X11\n language (EN)\n collate  en_US.UTF-8\n ctype    en_US.UTF-8\n tz       Etc/UTC\n date     2025-08-09\n pandoc   3.7.0.2 @ /usr/bin/ (via rmarkdown)\n quarto   1.7.31 @ /usr/local/bin/quarto\n\n─ Packages ───────────────────────────────────────────────────────────────────\n package    * version    date (UTC) lib source\n arrow      * 20.0.0.2   2025-05-26 [1] RSPM (R 4.5.0)\n DBI        * 1.2.3      2024-06-02 [1] RSPM (R 4.5.0)\n dplyr      * 1.1.4      2023-11-17 [1] RSPM (R 4.5.0)\n duckdb     * 1.3.0      2025-06-02 [1] RSPM (R 4.5.0)\n kableExtra * 1.4.0      2024-01-24 [1] RSPM (R 4.5.0)\n timemoir   * 0.8.0.9000 2025-08-09 [1] Github (nbc/timemoir@646734a)\n\n [1] /usr/local/lib/R/site-library\n [2] /usr/local/lib/R/library\n * ── Packages attached to the search path.\n\n──────────────────────────────────────────────────────────────────────────────"
+  }
+]

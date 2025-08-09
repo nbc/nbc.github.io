@@ -1,0 +1,8 @@
+geoarrow
+DBI
+duckdb
+sf
+arrow
+dplyr
+glue
+timemoir

@@ -1,27 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://nbc.github.io/index.html</loc>
-    <lastmod>2025-07-14T17:50:35.125Z</lastmod>
+    <loc>https://nbc.github.io/en/links.html</loc>
+    <lastmod>2025-08-09T15:27:52.448Z</lastmod>
   </url>
   <url>
-    <loc>https://nbc.github.io/about.html</loc>
-    <lastmod>2025-07-13T14:36:49.790Z</lastmod>
+    <loc>https://nbc.github.io/en/posts/2025-07-10-benchmark/index.html</loc>
+    <lastmod>2025-08-09T15:27:52.448Z</lastmod>
   </url>
   <url>
-    <loc>https://nbc.github.io/posts.html</loc>
-    <lastmod>2025-07-13T14:36:49.798Z</lastmod>
+    <loc>https://nbc.github.io/en/index.html</loc>
+    <lastmod>2025-08-09T15:27:52.448Z</lastmod>
   </url>
   <url>
-    <loc>https://nbc.github.io/posts/2025-07-10-to_arrow_bad/index.html</loc>
-    <lastmod>2025-07-14T18:05:59.764Z</lastmod>
+    <loc>https://nbc.github.io/en/posts.html</loc>
+    <lastmod>2025-08-09T15:28:34.902Z</lastmod>
   </url>
   <url>
-    <loc>https://nbc.github.io/posts/2025-07-10-st_as_sf/index.html</loc>
-    <lastmod>2025-07-14T17:59:52.657Z</lastmod>
+    <loc>https://nbc.github.io/en/posts/2025-07-10-st_as_sf/index.html</loc>
+    <lastmod>2025-08-09T15:28:02.049Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nbc.github.io/en/posts/2025-07-10-to_arrow_bad/index.html</loc>
+    <lastmod>2025-08-09T15:28:12.597Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nbc.github.io/links.html</loc>
+    <lastmod>2025-08-09T15:26:56.310Z</lastmod>
   </url>
   <url>
     <loc>https://nbc.github.io/posts/2025-07-10-benchmark/index.html</loc>
-    <lastmod>2025-07-14T17:59:48.165Z</lastmod>
+    <lastmod>2025-08-09T15:26:56.310Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nbc.github.io/index.html</loc>
+    <lastmod>2025-08-09T15:26:56.310Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nbc.github.io/posts.html</loc>
+    <lastmod>2025-08-09T15:27:37.872Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nbc.github.io/posts/2025-07-10-st_as_sf/index.html</loc>
+    <lastmod>2025-08-09T15:27:09.287Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nbc.github.io/posts/2025-07-10-to_arrow_bad/index.html</loc>
+    <lastmod>2025-08-09T15:27:20.967Z</lastmod>
   </url>
 </urlset>

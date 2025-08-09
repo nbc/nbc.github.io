@@ -1,0 +1,1290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss  xmlns:atom="http://www.w3.org/2005/Atom" 
+      xmlns:media="http://search.yahoo.com/mrss/" 
+      xmlns:content="http://purl.org/rss/1.0/modules/content/" 
+      xmlns:dc="http://purl.org/dc/elements/1.1/" 
+      version="2.0">
+<channel>
+<title>duckdb, R and others</title>
+<link>https://nbc.github.io/en/posts.html</link>
+<atom:link href="https://nbc.github.io/en/posts.xml" rel="self" type="application/rss+xml"/>
+<description>Some notes, often on big data but not only</description>
+<generator>quarto-1.7.31</generator>
+<lastBuildDate>Sat, 12 Jul 2025 00:00:00 GMT</lastBuildDate>
+<item>
+  <title>From duckdb to st_to_sf</title>
+  <dc:creator>Nicolas Chuche</dc:creator>
+  <link>https://nbc.github.io/en/posts/2025-07-10-st_as_sf/</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>Until recently, generating an SF dataframe from a duckdb query required:</p>
+<ol type="1">
+<li>Using <code>ST_AsWKB</code> or <code>ST_AsText</code> on the geometry column<br>
+</li>
+<li>Materializing the data to transfer it to <code>sf::st_as_sf</code></li>
+</ol>
+<p>With recent versions of duckdb, the spatial extension, and the geoarrow package, you can now ask duckdb to produce data that can be directly reused by <code>geoarrow</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="annotated-cell-1" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-1-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(geoarrow)</span>
+<span id="annotated-cell-1-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(duckdb)</span>
+<span id="annotated-cell-1-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(sf)</span>
+<span id="annotated-cell-1-4"></span>
+<span id="annotated-cell-1-5">con <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbConnect</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">duckdb</span>())</span>
+<span id="annotated-cell-1-6"></span>
+<span id="annotated-cell-1-7">url <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://static.data.gouv.fr/resources/sirene-geolocalise-parquet/20240107-143656/sirene2024-geo.parquet"</span></span>
+<span id="annotated-cell-1-8"></span>
+<span id="annotated-cell-1-9">x <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbExecute</span>(con, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"LOAD spatial;"</span>)</span>
+<span id="annotated-cell-1-10">x <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbExecute</span>(con, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"LOAD httpfs;"</span>)</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-1-11" class="code-annotation-target">x <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbExecute</span>(con, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"CALL register_geoarrow_extensions()"</span>)</span>
+<span id="annotated-cell-1-12"></span>
+<span id="annotated-cell-1-13">dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tbl</span>(con, dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sql</span>(glue<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">glue</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"SELECT geometry </span></span>
+<span id="annotated-cell-1-14"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">                                       FROM read_parquet('{url}')</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-1-15" class="code-annotation-target"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">                                       LIMIT 5"</span>))) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-1-16" class="code-annotation-target">  arrow<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">to_arrow</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-1-17" class="code-annotation-target">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">st_as_sf</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">crs=</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">st_crs</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2154</span>))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-1" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="11" data-code-annotation="1">Instructs duckdb spatial to add geoarrow metadata to geometry-type columns<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-1" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="15" data-code-annotation="2">Thanks to the previous command, this line will return geometries readable by geoarrow<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-1" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="16" data-code-annotation="3">This line converts the object into an arrow object<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-1" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="17" data-code-annotation="4">geoarrow overrides the <code>st_as_sf</code> function so it can directly read the arrow object</span>
+</dd>
+</dl>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 5 features and 0 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 3.735375 ymin: 49.38698 xmax: 3.738175 ymax: 49.39506
+Projected CRS: RGF93 v1 / Lambert-93
+                   geometry
+1 POINT (3.738175 49.39245)
+2 POINT (3.735375 49.38829)
+3 POINT (3.735446 49.39507)
+4 POINT (3.738132 49.38698)
+5 POINT (3.735748 49.38712)</code></pre>
+</div>
+</div>
+<section id="a-quick-comparison" class="level2">
+<h2 class="anchored" data-anchor-id="a-quick-comparison">A quick comparison</h2>
+<p>And it’s <strong>much</strong> faster than all other methods:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show me the benchmark code</summary>
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(arrow)</span>
+<span id="cb2-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(duckdb)</span>
+<span id="cb2-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(sf)</span>
+<span id="cb2-4"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(dplyr)</span>
+<span id="cb2-5"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(glue)</span>
+<span id="cb2-6"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(timemoir)</span>
+<span id="cb2-7"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(geoarrow)</span>
+<span id="cb2-8"></span>
+<span id="cb2-9">sample_size <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1e8</span></span>
+<span id="cb2-10"></span>
+<span id="cb2-11"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">!</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">file.exists</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"geo.parquet"</span>)) {</span>
+<span id="cb2-12">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">download.file</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://static.data.gouv.fr/resources/sirene-geolocalise-parquet/20240107-143656/sirene2024-geo.parquet"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"geo.parquet"</span>)</span>
+<span id="cb2-13">}</span>
+<span id="cb2-14"></span>
+<span id="cb2-15">with_register_geoarrow <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>() {</span>
+<span id="cb2-16">  conn_ddb <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbConnect</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">duckdb</span>())</span>
+<span id="cb2-17">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbExecute</span>(conn_ddb, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"LOAD spatial;"</span>)</span>
+<span id="cb2-18">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbExecute</span>(conn_ddb, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"CALL register_geoarrow_extensions()"</span>)</span>
+<span id="cb2-19">  </span>
+<span id="cb2-20">  query <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tbl</span>(conn_ddb, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sql</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">glue</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"SELECT * FROM read_parquet('geo.parquet') LIMIT {sample_size}"</span>))) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb2-21">    arrow<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">to_arrow</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb2-22">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">st_as_sf</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">crs=</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">st_crs</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2154</span>))</span>
+<span id="cb2-23">  </span>
+<span id="cb2-24">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbDisconnect</span>(conn_ddb, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">shutdown =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>)</span>
+<span id="cb2-25">}</span>
+<span id="cb2-26"></span>
+<span id="cb2-27">with_st_read <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>() {</span>
+<span id="cb2-28">  conn_ddb <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbConnect</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">duckdb</span>())</span>
+<span id="cb2-29">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">on.exit</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbDisconnect</span>(conn_ddb, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">shutdown =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>))</span>
+<span id="cb2-30">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbExecute</span>(conn_ddb, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"LOAD spatial;"</span>)</span>
+<span id="cb2-31">  </span>
+<span id="cb2-32">  a <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">st_read</span>(</span>
+<span id="cb2-33">    conn_ddb, </span>
+<span id="cb2-34">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">query=</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">glue</span>(</span>
+<span id="cb2-35">      <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"SELECT * REPLACE(geometry.ST_ASWKB() AS geometry) FROM read_parquet('geo.parquet') </span></span>
+<span id="cb2-36"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">      WHERE geometry IS NOT NULL LIMIT {sample_size}"</span></span>
+<span id="cb2-37">    ), </span>
+<span id="cb2-38">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">geometry_column =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"geometry"</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb2-39">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">st_set_crs</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2154</span>)</span>
+<span id="cb2-40">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbDisconnect</span>(conn_ddb, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">shutdown =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>)</span>
+<span id="cb2-41">}</span>
+<span id="cb2-42"></span>
+<span id="cb2-43">with_get_query_aswkb <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>() {</span>
+<span id="cb2-44">  conn_ddb <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbConnect</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">duckdb</span>())</span>
+<span id="cb2-45">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">on.exit</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbDisconnect</span>(conn_ddb, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">shutdown =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>))</span>
+<span id="cb2-46">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbExecute</span>(conn_ddb, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"LOAD spatial;"</span>)</span>
+<span id="cb2-47">  </span>
+<span id="cb2-48">  query <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbGetQuery</span>(</span>
+<span id="cb2-49">    conn_ddb, </span>
+<span id="cb2-50">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">glue</span>(</span>
+<span id="cb2-51">      <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span></span>
+<span id="cb2-52"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">      SELECT * REPLACE(geometry.ST_AsWKB() AS geometry) FROM read_parquet('geo.parquet') </span></span>
+<span id="cb2-53"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">      WHERE geometry IS NOT NULL LIMIT {sample_size}</span></span>
+<span id="cb2-54"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">      "</span></span>
+<span id="cb2-55">    )</span>
+<span id="cb2-56">  ) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb2-57">    sf<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">st_as_sf</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">crs =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">st_crs</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2154</span>))</span>
+<span id="cb2-58">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbDisconnect</span>(conn_ddb, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">shutdown =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>)</span>
+<span id="cb2-59">}</span>
+<span id="cb2-60"></span>
+<span id="cb2-61">with_get_query_astxt <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>() {</span>
+<span id="cb2-62">  conn_ddb <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbConnect</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">duckdb</span>())</span>
+<span id="cb2-63">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">on.exit</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbDisconnect</span>(conn_ddb, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">shutdown =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>))</span>
+<span id="cb2-64">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbExecute</span>(conn_ddb, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"LOAD spatial;"</span>)</span>
+<span id="cb2-65">  </span>
+<span id="cb2-66">  query <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbGetQuery</span>(</span>
+<span id="cb2-67">    conn_ddb, </span>
+<span id="cb2-68">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">glue</span>(</span>
+<span id="cb2-69">      <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span></span>
+<span id="cb2-70"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">      SELECT * REPLACE(geometry.ST_AsText() AS geometry) FROM read_parquet('geo.parquet')</span></span>
+<span id="cb2-71"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">      WHERE geometry IS NOT NULL LIMIT {sample_size}</span></span>
+<span id="cb2-72"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">      "</span></span>
+<span id="cb2-73">    )</span>
+<span id="cb2-74">  ) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb2-75">    sf<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">st_as_sf</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">wkt =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"geometry"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">crs =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">st_crs</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2154</span>))</span>
+<span id="cb2-76">}</span></code></pre></div>
+</details>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1">res <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">timemoir</span>(</span>
+<span id="cb3-2">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">with_register_geoarrow</span>(), </span>
+<span id="cb3-3">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">with_st_read</span>(),</span>
+<span id="cb3-4">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">with_get_query_aswkb</span>(),</span>
+<span id="cb3-5">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">with_get_query_astxt</span>())</span></code></pre></div>
+<div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1">res <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb4-2">  kableExtra<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">kable</span>()</span></code></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 32%">
+<col style="width: 11%">
+<col style="width: 7%">
+<col style="width: 13%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">fname</th>
+<th style="text-align: right;">duration</th>
+<th style="text-align: left;">error</th>
+<th style="text-align: right;">start_mem</th>
+<th style="text-align: right;">max_mem</th>
+<th style="text-align: right;">cpu_user</th>
+<th style="text-align: right;">cpu_sys</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">with_register_geoarrow()</td>
+<td style="text-align: right;">102.676</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">256252</td>
+<td style="text-align: right;">26895240</td>
+<td style="text-align: right;">85.800</td>
+<td style="text-align: right;">16.457</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">with_st_read()</td>
+<td style="text-align: right;">552.807</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">257016</td>
+<td style="text-align: right;">25266148</td>
+<td style="text-align: right;">496.485</td>
+<td style="text-align: right;">54.894</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">with_get_query_aswkb()</td>
+<td style="text-align: right;">593.295</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">285444</td>
+<td style="text-align: right;">25291172</td>
+<td style="text-align: right;">552.240</td>
+<td style="text-align: right;">77.263</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">with_get_query_astxt()</td>
+<td style="text-align: right;">450.991</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">286640</td>
+<td style="text-align: right;">24853872</td>
+<td style="text-align: right;">426.793</td>
+<td style="text-align: right;">63.129</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">plot</span>(res)</span></code></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://nbc.github.io/en/posts/2025-07-10-st_as_sf/index.en_files/figure-html/output_benchmark-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="some-useful-links" class="level2">
+<h2 class="anchored" data-anchor-id="some-useful-links">Some useful links</h2>
+<p>There isn’t much documentation about this command:</p>
+<ul>
+<li><a href="https://youtu.be/tjNEoIYr_ag?t=1641">A webinar from the R Consortium</a><br>
+</li>
+<li><a href="https://github.com/duckdb/duckdb-spatial/issues/589">A geoarrow issue</a></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Session Information
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1">devtools<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">session_info</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">pkgs =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"attached"</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>─ Session info ───────────────────────────────────────────────────────────────
+ setting  value
+ version  R version 4.5.0 (2025-04-11)
+ os       Ubuntu 22.04.5 LTS
+ system   x86_64, linux-gnu
+ ui       X11
+ language (EN)
+ collate  en_US.UTF-8
+ ctype    en_US.UTF-8
+ tz       Etc/UTC
+ date     2025-08-09
+ pandoc   3.7.0.2 @ /usr/bin/ (via rmarkdown)
+ quarto   1.7.31 @ /usr/local/bin/quarto
+
+─ Packages ───────────────────────────────────────────────────────────────────
+ package  * version    date (UTC) lib source
+ arrow    * 20.0.0.2   2025-05-26 [1] RSPM (R 4.5.0)
+ DBI      * 1.2.3      2024-06-02 [1] RSPM (R 4.5.0)
+ dplyr    * 1.1.4      2023-11-17 [1] RSPM (R 4.5.0)
+ duckdb   * 1.3.0      2025-06-02 [1] RSPM (R 4.5.0)
+ geoarrow * 0.3.0      2025-05-26 [1] RSPM (R 4.5.0)
+ glue     * 1.8.0      2024-09-30 [1] RSPM (R 4.5.0)
+ sf       * 1.0-21     2025-05-15 [1] RSPM (R 4.5.0)
+ timemoir * 0.8.0.9000 2025-08-09 [1] Github (nbc/timemoir@646734a)
+
+ [1] /usr/local/lib/R/site-library
+ [2] /usr/local/lib/R/library
+ * ── Packages attached to the search path.
+
+──────────────────────────────────────────────────────────────────────────────</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a> ]]></description>
+  <category>R</category>
+  <category>duckdb</category>
+  <category>arrow</category>
+  <category>sf</category>
+  <category>geoarrow</category>
+  <guid>https://nbc.github.io/en/posts/2025-07-10-st_as_sf/</guid>
+  <pubDate>Sat, 12 Jul 2025 00:00:00 GMT</pubDate>
+  <media:content url="https://duckdb.org/images/logo-dl/DuckDB_Logo-horizontal.svg" medium="image" type="image/svg+xml"/>
+</item>
+<item>
+  <title>Comparison between arrow::to_arrow() and duckplyr for writing Parquet files</title>
+  <dc:creator>Nicolas Chuche</dc:creator>
+  <link>https://nbc.github.io/en/posts/2025-07-10-to_arrow_bad/</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>A commonly recommended approach to write a Parquet file after using <code>dplyr::tbl</code> with <code>duckdb</code> is to use <code>arrow::to_arrow</code> with <code>arrow::write_dataset</code> or <code>arrow::write_parquet</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tbl</span>(con, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"read_parquet('geo.parquet')"</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb1-2">  ...</span>
+<span id="cb1-3">  arrow<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">to_arrow</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb1-4">  arrow<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">write_dataset</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"my_dataset"</span>)</span></code></pre></div>
+</div>
+<p>While this syntax works, the new <a href="https://duckplyr.tidyverse.org/index.html">duckplyr</a> package offers a <strong>much more efficient</strong> alternative:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="annotated-cell-2" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-2-1">con <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbConnect</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">duckdb</span>())</span>
+<span id="annotated-cell-2-2"></span>
+<span id="annotated-cell-2-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tbl</span>(con, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"read_parquet('geo.parquet')"</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="annotated-cell-2-4">  ...</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-2-5" class="code-annotation-target">  duckplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">as_duckdb_tibble</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-2-6" class="code-annotation-target">  duckplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">compute_parquet</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"my_tbl.parquet"</span>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-2" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-2" data-code-lines="5" data-code-annotation="1"><a href="https://duckplyr.tidyverse.org/reference/duckdb_tibble.html"><code>duckplyr::as_duckdb_tibble</code></a> converts the object returned by <code>tbl()</code> into a <code>duckplyr</code> objet</span>
+</dd>
+<dt data-target-cell="annotated-cell-2" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-2" data-code-lines="6" data-code-annotation="2"><a href="https://duckplyr.tidyverse.org/reference/compute_parquet.html"><code>duckplyr::compute_parquet</code></a> writes the Parquet file</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>These two lines achieve the same result as the Arrow version, but using <code>duckplyr</code> is <strong>much more efficient</strong>.</p>
+<section id="a-quick-benchmark" class="level2">
+<h2 class="anchored" data-anchor-id="a-quick-benchmark">A Quick Benchmark</h2>
+<p>Here are the results from benchmarking three common methods (with full reproducible code below):</p>
+<ul>
+<li><code>with_arrow</code>: using <code>arrow::to_arrow()</code> + <code>write_dataset()</code></li>
+<li><code>with_duckplyr</code>: using <code>duckplyr::as_duckdb_tibble()</code> + <code>compute_parquet()</code></li>
+<li><code>with_copy_to</code>: using DuckDB’s native <code>COPY ... TO ...</code> as a baseline</li>
+</ul>
+<div class="cell">
+<details class="code-fold">
+<summary>Show me the benchmark code</summary>
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(duckdb)</span>
+<span id="cb2-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(dplyr)</span>
+<span id="cb2-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(arrow)</span>
+<span id="cb2-4"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(kableExtra)</span>
+<span id="cb2-5"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(timemoir)</span>
+<span id="cb2-6"></span>
+<span id="cb2-7"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">!</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">file.exists</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"geo.parquet"</span>)) {</span>
+<span id="cb2-8">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">download.file</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://static.data.gouv.fr/resources/sirene-geolocalise-parquet/20240107-143656/sirene2024-geo.parquet"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"geo.parquet"</span>)</span>
+<span id="cb2-9">}</span>
+<span id="cb2-10"></span>
+<span id="cb2-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Full DuckDB method</span></span>
+<span id="cb2-12">with_copy_to <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>() {</span>
+<span id="cb2-13">  con <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbConnect</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">duckdb</span>())</span>
+<span id="cb2-14">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">on.exit</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbDisconnect</span>(con, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">shutdown =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>))</span>
+<span id="cb2-15"></span>
+<span id="cb2-16">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbExecute</span>(con, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"COPY (FROM read_parquet('geo.parquet')) TO 'test.parquet' (FORMAT PARQUET, COMPRESSION ZSTD)"</span>)</span>
+<span id="cb2-17">}</span>
+<span id="cb2-18"></span>
+<span id="cb2-19"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># "Historical" version with Arrow</span></span>
+<span id="cb2-20">with_arrow <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>() {</span>
+<span id="cb2-21">  con <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbConnect</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">duckdb</span>())</span>
+<span id="cb2-22">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">on.exit</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbDisconnect</span>(con, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">shutdown =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>))</span>
+<span id="cb2-23"></span>
+<span id="cb2-24">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tbl</span>(con, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"read_parquet('geo.parquet')"</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb2-25">    arrow<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">to_arrow</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb2-26">    arrow<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">write_dataset</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'test'</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">compression=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'zstd'</span>)</span>
+<span id="cb2-27">}</span>
+<span id="cb2-28"></span>
+<span id="cb2-29"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Version using the new duckplyr package</span></span>
+<span id="cb2-30">with_duckplyr <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>() {</span>
+<span id="cb2-31">  con <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbConnect</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">duckdb</span>())</span>
+<span id="cb2-32">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">on.exit</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbDisconnect</span>(con, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">shutdown =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>))</span>
+<span id="cb2-33"></span>
+<span id="cb2-34">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tbl</span>(con, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"read_parquet('geo.parquet')"</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb2-35">    duckplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">as_duckdb_tibble</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb2-36">    duckplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">compute_parquet</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"my_tbl.parquet"</span>)</span>
+<span id="cb2-37">}</span></code></pre></div>
+</details>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1">res <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">timemoir</span>(</span>
+<span id="cb3-2">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">with_arrow</span>(), </span>
+<span id="cb3-3">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">with_copy_to</span>(), </span>
+<span id="cb3-4">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">with_duckplyr</span>()</span>
+<span id="cb3-5">)</span></code></pre></div>
+<div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1">res <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb4-2">  kableExtra<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">kable</span>()</span></code></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 10%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">fname</th>
+<th style="text-align: right;">duration</th>
+<th style="text-align: left;">error</th>
+<th style="text-align: right;">start_mem</th>
+<th style="text-align: right;">max_mem</th>
+<th style="text-align: right;">cpu_user</th>
+<th style="text-align: right;">cpu_sys</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">with_arrow()</td>
+<td style="text-align: right;">132.820</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">155100</td>
+<td style="text-align: right;">21481404</td>
+<td style="text-align: right;">159.980</td>
+<td style="text-align: right;">50.707</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">with_copy_to()</td>
+<td style="text-align: right;">32.043</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">162624</td>
+<td style="text-align: right;">12917092</td>
+<td style="text-align: right;">171.558</td>
+<td style="text-align: right;">70.419</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">with_duckplyr()</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">there is no package called ‘duckplyr’</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">plot</span>(res)</span></code></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 3 rows containing missing values or values outside the scale range
+(`geom_col()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://nbc.github.io/en/posts/2025-07-10-to_arrow_bad/index.en_files/figure-html/output_benchmark-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+<p>On the server I use, the <code>duckplyr</code> version is <strong>6× faster</strong> than the <code>arrow</code> version and uses <strong>half the memory</strong>, performing on par with pure DuckDB.</p>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>If you’re working with <code>dplyr</code>, stop using <code>to_arrow()</code> and switch to <code>duckplyr</code> for better performance.</p>
+</section>
+<section id="useful-links" class="level2">
+<h2 class="anchored" data-anchor-id="useful-links">Useful Links</h2>
+<ul>
+<li><a href="https://duckplyr.tidyverse.org/articles/large.html">duckplyr documentation</a></li>
+</ul>
+<hr>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Session Info
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1">devtools<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">session_info</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">pkgs =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"attached"</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>─ Session info ───────────────────────────────────────────────────────────────
+ setting  value
+ version  R version 4.5.0 (2025-04-11)
+ os       Ubuntu 22.04.5 LTS
+ system   x86_64, linux-gnu
+ ui       X11
+ language (EN)
+ collate  en_US.UTF-8
+ ctype    en_US.UTF-8
+ tz       Etc/UTC
+ date     2025-08-09
+ pandoc   3.7.0.2 @ /usr/bin/ (via rmarkdown)
+ quarto   1.7.31 @ /usr/local/bin/quarto
+
+─ Packages ───────────────────────────────────────────────────────────────────
+ package    * version    date (UTC) lib source
+ arrow      * 20.0.0.2   2025-05-26 [1] RSPM (R 4.5.0)
+ DBI        * 1.2.3      2024-06-02 [1] RSPM (R 4.5.0)
+ dplyr      * 1.1.4      2023-11-17 [1] RSPM (R 4.5.0)
+ duckdb     * 1.3.0      2025-06-02 [1] RSPM (R 4.5.0)
+ kableExtra * 1.4.0      2024-01-24 [1] RSPM (R 4.5.0)
+ timemoir   * 0.8.0.9000 2025-08-09 [1] Github (nbc/timemoir@646734a)
+
+ [1] /usr/local/lib/R/site-library
+ [2] /usr/local/lib/R/library
+ * ── Packages attached to the search path.
+
+──────────────────────────────────────────────────────────────────────────────</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a> ]]></description>
+  <category>R</category>
+  <category>duckdb</category>
+  <category>arrow</category>
+  <guid>https://nbc.github.io/en/posts/2025-07-10-to_arrow_bad/</guid>
+  <pubDate>Fri, 11 Jul 2025 00:00:00 GMT</pubDate>
+  <media:content url="https://duckplyr.tidyverse.org/logo.png" medium="image" type="image/png"/>
+</item>
+<item>
+  <title>Comparing DuckDB/Arrow Performance</title>
+  <dc:creator>Nicolas Chuche</dc:creator>
+  <link>https://nbc.github.io/en/posts/2025-07-10-benchmark/</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>When it comes to comparing different approaches, the ideal scenario is to run the code in benchmarking tools, but the “classic” R tools are not well suited for comparing <code>duckdb</code> and/or <code>arrow</code> code:</p>
+<ul>
+<li><code>tictoc</code> only returns elapsed time</li>
+<li><code>bench</code> does not detect memory allocations from duckdb and arrow</li>
+<li>…</li>
+</ul>
+<p>In my articles, I will regularly use <a href="https://github.com/nbc/timemoir">timemoir</a>, written specifically for this type of comparison:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(timemoir)</span>
+<span id="cb1-2"></span>
+<span id="cb1-3">test_function <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>(n) {</span>
+<span id="cb1-4">  x <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">rnorm</span>(n); <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">mean</span>(x)</span>
+<span id="cb1-5">}</span>
+<span id="cb1-6"></span>
+<span id="cb1-7">res <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">timemoir</span>(</span>
+<span id="cb1-8">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">test_function</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.2e7</span>),</span>
+<span id="cb1-9">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">test_function</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4e7</span>),</span>
+<span id="cb1-10">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">test_function</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1e8</span>)</span>
+<span id="cb1-11">)</span></code></pre></div>
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1">res <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb2-2">  kableExtra<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">kable</span>()</span></code></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 31%">
+<col style="width: 12%">
+<col style="width: 8%">
+<col style="width: 13%">
+<col style="width: 10%">
+<col style="width: 12%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">fname</th>
+<th style="text-align: right;">duration</th>
+<th style="text-align: left;">error</th>
+<th style="text-align: right;">start_mem</th>
+<th style="text-align: right;">max_mem</th>
+<th style="text-align: right;">cpu_user</th>
+<th style="text-align: right;">cpu_sys</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">test_function(1.2e+07)</td>
+<td style="text-align: right;">1.823</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">110012</td>
+<td style="text-align: right;">204736</td>
+<td style="text-align: right;">1.455</td>
+<td style="text-align: right;">0.137</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">test_function(4e+07)</td>
+<td style="text-align: right;">4.600</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">109296</td>
+<td style="text-align: right;">423636</td>
+<td style="text-align: right;">3.996</td>
+<td style="text-align: right;">0.276</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">test_function(1e+08)</td>
+<td style="text-align: right;">9.564</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">109232</td>
+<td style="text-align: right;">892384</td>
+<td style="text-align: right;">9.065</td>
+<td style="text-align: right;">0.495</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">plot</span>(res)</span></code></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://nbc.github.io/en/posts/2025-07-10-benchmark/index.en_files/figure-html/timemoir-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+<p>That said, these are not “true” rigorous benchmarks—well beyond the scope of this blog, but rather quick comparisons intended to provide a rough idea of relative performance.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Session Information
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1">devtools<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">session_info</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">pkgs =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"attached"</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>─ Session info ───────────────────────────────────────────────────────────────
+ setting  value
+ version  R version 4.5.0 (2025-04-11)
+ os       Ubuntu 22.04.5 LTS
+ system   x86_64, linux-gnu
+ ui       X11
+ language (EN)
+ collate  en_US.UTF-8
+ ctype    en_US.UTF-8
+ tz       Etc/UTC
+ date     2025-08-09
+ pandoc   3.7.0.2 @ /usr/bin/ (via rmarkdown)
+ quarto   1.7.31 @ /usr/local/bin/quarto
+
+─ Packages ───────────────────────────────────────────────────────────────────
+ package  * version    date (UTC) lib source
+ timemoir * 0.8.0.9000 2025-08-09 [1] Github (nbc/timemoir@646734a)
+
+ [1] /usr/local/lib/R/site-library
+ [2] /usr/local/lib/R/library
+ * ── Packages attached to the search path.
+
+──────────────────────────────────────────────────────────────────────────────</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+
+<a onclick="window.scrollTo(0, 0); return false;" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a> ]]></description>
+  <category>R</category>
+  <category>benchmark</category>
+  <guid>https://nbc.github.io/en/posts/2025-07-10-benchmark/</guid>
+  <pubDate>Thu, 10 Jul 2025 00:00:00 GMT</pubDate>
+  <media:content url="https://duckdb.org/images/logo-dl/DuckDB_Logo-horizontal.svg" medium="image" type="image/svg+xml"/>
+</item>
+</channel>
+</rss>

@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="fr" xml:lang="fr">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<link rel="alternate" hreflang="fr" href="https://nbc.github.io/posts/2025-07-10-benchmark/index.html" />
-<link rel="alternate" hreflang="en" href="https://nbc.github.io/en/posts/2025-07-10-benchmark/index.en.html" />
+<link rel="alternate" hreflang="fr" href="https://nbc.github.io/posts/2025-07-10-to_arrow_bad/index.html" />
+<link rel="alternate" hreflang="en" href="https://nbc.github.io/en/posts/2025-07-10-to_arrow_bad/index.en.html" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta name="generator" content="quarto-1.7.31">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <meta name="author" content="Nicolas Chuche">
-<meta name="description" content="Comment évaluer la mémoire et le CPU de traitements long en duckdb/arrow">
-<title>Comparer des performances DuckDB/arrow – duckdb, de R et autres</title>
+<meta name="dcterms.date" content="2025-07-11">
+<meta name="description" content="Why You Should Avoid arrow::to_arrow() with DuckDB + dplyr">
+<title>Comparison between arrow::to_arrow() and duckplyr for writing Parquet files – duckdb, R and others</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -77,17 +78,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   ],
   "show-item-context": false,
   "language": {
-    "search-no-results-text": "Pas de résultats",
-    "search-matching-documents-text": "documents trouvés",
-    "search-copy-link-title": "Copier le lien vers la recherche",
-    "search-hide-matches-text": "Cacher les correspondances additionnelles",
-    "search-more-match-text": "correspondance de plus dans ce document",
-    "search-more-matches-text": "correspondances de plus dans ce document",
-    "search-clear-button-title": "Effacer",
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
     "search-text-placeholder": "",
-    "search-detached-cancel-button-title": "Annuler",
-    "search-submit-button-title": "Envoyer",
-    "search-label": "Recherche"
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script><link rel="stylesheet" href="../../styles.css">
 </head>
@@ -97,17 +98,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <header id="quarto-header" class="headroom fixed-top"><nav class="navbar navbar-expand-lg " data-bs-theme="dark"><div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
-    <span class="navbar-title">duckdb, de R et autres</span>
+    <span class="navbar-title">duckdb, R and others</span>
     </a>
   </div>
-            <div id="quarto-search" class="" title="Recherche"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Basculer la navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
 <li class="nav-item"><div class="dropdown" id="languages-links-parent">
-<button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="languages-button"><i class="bi bi-globe2"></i> Français</button><ul class="dropdown-menu" id="languages-links"><li><a class="dropdown-item" href="https://nbc.github.io/en/posts/2025-07-10-benchmark/index.html" id="language-link-en">English</a></li></ul>
+<button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="languages-button"><i class="bi bi-globe2"></i> English</button><ul class="dropdown-menu" id="languages-links"><li><a class="dropdown-item" href="https://nbc.github.io/posts/2025-07-10-to_arrow_bad/index.html" id="language-link-fr">Français</a></li></ul>
 </div></li>
 <li class="nav-item">
     <a class="nav-link" href="../../index.html"> 
@@ -119,7 +120,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="../../links.html"> 
-<span class="menu-text">Liens</span></a>
+<span class="menu-text">Links</span></a>
   </li>  
 </ul>
 </div> <!-- /navcollapse -->
@@ -129,21 +130,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
-    </div>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">On this page</h2>
+   
+  <ul>
+<li><a href="#a-quick-benchmark" id="toc-a-quick-benchmark" class="nav-link active" data-scroll-target="#a-quick-benchmark">A Quick Benchmark</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#useful-links" id="toc-useful-links" class="nav-link" data-scroll-target="#useful-links">Useful Links</a></li>
+  </ul></nav>
+</div>
 <!-- main -->
 <main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
-<h1 class="title">Comparer des performances DuckDB/arrow</h1>
+<h1 class="title">Comparison between arrow::to_arrow() and duckplyr for writing Parquet files</h1>
   <div class="quarto-categories">
     <div class="quarto-category">R</div>
-    <div class="quarto-category">benchmark</div>
+    <div class="quarto-category">duckdb</div>
+    <div class="quarto-category">arrow</div>
   </div>
   </div>
 
 <div>
   <div class="description">
-    Comment évaluer la mémoire et le CPU de traitements long en duckdb/arrow
+    Why You Should Avoid arrow::to_arrow() with DuckDB + dplyr
   </div>
 </div>
 
@@ -151,16 +159,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="quarto-title-meta">
 
     <div>
-    <div class="quarto-title-meta-heading">Auteur·rice</div>
+    <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
              <p>Nicolas Chuche </p>
           </div>
   </div>
     
     <div>
-    <div class="quarto-title-meta-heading">Date de publication</div>
+    <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">10 juillet 2025</p>
+      <p class="date">July 11, 2025</p>
     </div>
   </div>
   
@@ -169,39 +177,106 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   
 
 
-</header><p>Quand il s’agit de comparer des façons de faire, l’idéal est de lancer le code dans des outils de benchmarks mais les outils “classiques” de R ne sont pas adaptés à la comparaison de code <code>duckdb</code> et/ou <code>arrow</code> :</p>
+</header><p>A commonly recommended approach to write a Parquet file after using <code>dplyr::tbl</code> with <code>duckdb</code> is to use <code>arrow::to_arrow</code> with <code>arrow::write_dataset</code> or <code>arrow::write_parquet</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(con, <span class="st">"read_parquet('geo.parquet')"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  arrow<span class="sc">::</span><span class="fu">to_arrow</span>() <span class="sc">|&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  arrow<span class="sc">::</span><span class="fu">write_dataset</span>(<span class="st">"my_dataset"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>While this syntax works, the new <a href="https://duckplyr.tidyverse.org/index.html">duckplyr</a> package offers a <strong>much more efficient</strong> alternative:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="annotated-cell-2"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-2-1"><a href="#annotated-cell-2-1" aria-hidden="true" tabindex="-1"></a>con <span class="ot">&lt;-</span> <span class="fu">dbConnect</span>(<span class="fu">duckdb</span>())</span>
+<span id="annotated-cell-2-2"><a href="#annotated-cell-2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-2-3"><a href="#annotated-cell-2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(con, <span class="st">"read_parquet('geo.parquet')"</span>) <span class="sc">|&gt;</span></span>
+<span id="annotated-cell-2-4"><a href="#annotated-cell-2-4" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-2-5" class="code-annotation-target"><a href="#annotated-cell-2-5" aria-hidden="true" tabindex="-1"></a>  duckplyr<span class="sc">::</span><span class="fu">as_duckdb_tibble</span>() <span class="sc">|&gt;</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-2-6" class="code-annotation-target"><a href="#annotated-cell-2-6" aria-hidden="true" tabindex="-1"></a>  duckplyr<span class="sc">::</span><span class="fu">compute_parquet</span>(<span class="st">"my_tbl.parquet"</span>)</span><div class="code-annotation-gutter-bg"></div>
+<div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-2" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-2" data-code-lines="5" data-code-annotation="1"><a href="https://duckplyr.tidyverse.org/reference/duckdb_tibble.html"><code>duckplyr::as_duckdb_tibble</code></a> converts the object returned by <code>tbl()</code> into a <code>duckplyr</code> objet</span>
+</dd>
+<dt data-target-cell="annotated-cell-2" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-2" data-code-lines="6" data-code-annotation="2"><a href="https://duckplyr.tidyverse.org/reference/compute_parquet.html"><code>duckplyr::compute_parquet</code></a> writes the Parquet file</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>These two lines achieve the same result as the Arrow version, but using <code>duckplyr</code> is <strong>much more efficient</strong>.</p>
+<section id="a-quick-benchmark" class="level2"><h2 class="anchored" data-anchor-id="a-quick-benchmark">A Quick Benchmark</h2>
+<p>Here are the results from benchmarking three common methods (with full reproducible code below):</p>
 <ul>
 <li>
-<code>tictoc</code> ne retourne que le temps</li>
+<code>with_arrow</code>: using <code>arrow::to_arrow()</code> + <code>write_dataset()</code>
+</li>
 <li>
-<code>bench</code> ne voit pas les allocations mémoires de duckdb et arrow</li>
-<li>…</li>
+<code>with_duckplyr</code>: using <code>duckplyr::as_duckdb_tibble()</code> + <code>compute_parquet()</code>
+</li>
+<li>
+<code>with_copy_to</code>: using DuckDB’s native <code>COPY ... TO ...</code> as a baseline</li>
 </ul>
-<p>Dans mes articles, j’utiliserais régulièrement <a href="https://github.com/nbc/timemoir">timemoir</a> écrit exprès pour ce genre de comparatifs :</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(timemoir)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>test_function <span class="ot">&lt;-</span> <span class="cf">function</span>(n) {</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n); <span class="fu">mean</span>(x)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">timemoir</span>(</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">test_function</span>(<span class="fl">1.2e7</span>),</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">test_function</span>(<span class="fl">4e7</span>),</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">test_function</span>(<span class="fl">1e8</span>)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>res <span class="sc">|&gt;</span> </span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold"><summary>Show me the benchmark code</summary><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(duckdb)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(arrow)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(timemoir)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">file.exists</span>(<span class="st">"geo.parquet"</span>)) {</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">download.file</span>(<span class="st">"https://static.data.gouv.fr/resources/sirene-geolocalise-parquet/20240107-143656/sirene2024-geo.parquet"</span>, <span class="st">"geo.parquet"</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Full DuckDB method</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>with_copy_to <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  con <span class="ot">&lt;-</span> <span class="fu">dbConnect</span>(<span class="fu">duckdb</span>())</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">on.exit</span>(<span class="fu">dbDisconnect</span>(con, <span class="at">shutdown =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dbExecute</span>(con, <span class="st">"COPY (FROM read_parquet('geo.parquet')) TO 'test.parquet' (FORMAT PARQUET, COMPRESSION ZSTD)"</span>)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co"># "Historical" version with Arrow</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>with_arrow <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  con <span class="ot">&lt;-</span> <span class="fu">dbConnect</span>(<span class="fu">duckdb</span>())</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">on.exit</span>(<span class="fu">dbDisconnect</span>(con, <span class="at">shutdown =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl</span>(con, <span class="st">"read_parquet('geo.parquet')"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    arrow<span class="sc">::</span><span class="fu">to_arrow</span>() <span class="sc">|&gt;</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    arrow<span class="sc">::</span><span class="fu">write_dataset</span>(<span class="st">'test'</span>, <span class="at">compression=</span><span class="st">'zstd'</span>)</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Version using the new duckplyr package</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>with_duckplyr <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>  con <span class="ot">&lt;-</span> <span class="fu">dbConnect</span>(<span class="fu">duckdb</span>())</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">on.exit</span>(<span class="fu">dbDisconnect</span>(con, <span class="at">shutdown =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl</span>(con, <span class="st">"read_parquet('geo.parquet')"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    duckplyr<span class="sc">::</span><span class="fu">as_duckdb_tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    duckplyr<span class="sc">::</span><span class="fu">compute_parquet</span>(<span class="st">"my_tbl.parquet"</span>)</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">timemoir</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">with_arrow</span>(), </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">with_copy_to</span>(), </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">with_duckplyr</span>()</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>res <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
-<col style="width: 31%">
-<col style="width: 12%">
+<col style="width: 16%">
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 10%">
+<col style="width: 9%">
+<col style="width: 9%">
 <col style="width: 8%">
-<col style="width: 13%">
-<col style="width: 10%">
-<col style="width: 12%">
-<col style="width: 10%">
 </colgroup>
 <thead><tr class="header">
 <th style="text-align: left;">fname</th>
@@ -214,59 +289,70 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">test_function(1.2e+07)</td>
-<td style="text-align: right;">0.666</td>
+<td style="text-align: left;">with_arrow()</td>
+<td style="text-align: right;">132.820</td>
 <td style="text-align: left;">NA</td>
-<td style="text-align: right;">110088</td>
-<td style="text-align: right;">200888</td>
-<td style="text-align: right;">0.619</td>
-<td style="text-align: right;">0.048</td>
+<td style="text-align: right;">155100</td>
+<td style="text-align: right;">21481404</td>
+<td style="text-align: right;">159.980</td>
+<td style="text-align: right;">50.707</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">test_function(4e+07)</td>
-<td style="text-align: right;">1.979</td>
+<td style="text-align: left;">with_copy_to()</td>
+<td style="text-align: right;">32.043</td>
 <td style="text-align: left;">NA</td>
-<td style="text-align: right;">110088</td>
-<td style="text-align: right;">423768</td>
-<td style="text-align: right;">1.861</td>
-<td style="text-align: right;">0.116</td>
+<td style="text-align: right;">162624</td>
+<td style="text-align: right;">12917092</td>
+<td style="text-align: right;">171.558</td>
+<td style="text-align: right;">70.419</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">test_function(1e+08)</td>
-<td style="text-align: right;">3.376</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: right;">109364</td>
-<td style="text-align: right;">892536</td>
-<td style="text-align: right;">3.239</td>
-<td style="text-align: right;">0.136</td>
+<td style="text-align: left;">with_duckplyr()</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">there is no package called ‘duckplyr’</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
 </tr>
 </tbody>
 </table>
 </div>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(res)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(res)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 3 rows containing missing values or values outside the scale range
+(`geom_col()`).</code></pre>
+</div>
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="index_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="index.en_files/figure-html/output_benchmark-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <hr>
-<p>Cela dit il ne s’agit pas de “vrais” benchmarks rigoureux, bien au delà des objectifs de ce blog mais de comparaisons rapides, destinées à se faire une idée approximative des performances relatives.</p>
+<p>On the server I use, the <code>duckplyr</code> version is <strong>6× faster</strong> than the <code>arrow</code> version and uses <strong>half the memory</strong>, performing on par with pure DuckDB.</p>
+</section><section id="conclusion" class="level2"><h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>If you’re working with <code>dplyr</code>, stop using <code>to_arrow()</code> and switch to <code>duckplyr</code> for better performance.</p>
+</section><section id="useful-links" class="level2"><h2 class="anchored" data-anchor-id="useful-links">Useful Links</h2>
+<ul>
+<li><a href="https://duckplyr.tidyverse.org/articles/large.html">duckplyr documentation</a></li>
+</ul>
+<hr>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Information de session
+Session Info
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">session_info</span>(<span class="at">pkgs =</span> <span class="st">"attached"</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">session_info</span>(<span class="at">pkgs =</span> <span class="st">"attached"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>─ Session info ───────────────────────────────────────────────────────────────
  setting  value
@@ -278,13 +364,18 @@ Information de session
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       Etc/UTC
- date     2025-07-14
+ date     2025-08-09
  pandoc   3.7.0.2 @ /usr/bin/ (via rmarkdown)
  quarto   1.7.31 @ /usr/local/bin/quarto
 
 ─ Packages ───────────────────────────────────────────────────────────────────
- package  * version    date (UTC) lib source
- timemoir * 0.7.0.9000 2025-07-14 [1] Github (nbc/timemoir@01b6674)
+ package    * version    date (UTC) lib source
+ arrow      * 20.0.0.2   2025-05-26 [1] RSPM (R 4.5.0)
+ DBI        * 1.2.3      2024-06-02 [1] RSPM (R 4.5.0)
+ dplyr      * 1.1.4      2023-11-17 [1] RSPM (R 4.5.0)
+ duckdb     * 1.3.0      2025-06-02 [1] RSPM (R 4.5.0)
+ kableExtra * 1.4.0      2024-01-24 [1] RSPM (R 4.5.0)
+ timemoir   * 0.8.0.9000 2025-08-09 [1] Github (nbc/timemoir@646734a)
 
  [1] /usr/local/lib/R/site-library
  [2] /usr/local/lib/R/library
@@ -298,8 +389,7 @@ Information de session
 </div>
 
 
-
-<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Retour au sommet</a></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+</section><a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
     const anchorJS = new window.AnchorJS();
@@ -324,12 +414,12 @@ Information de session
       // flash "checked"
       button.classList.add('code-copy-button-checked');
       var currentTitle = button.getAttribute("title");
-      button.setAttribute("title", "Copié");
+      button.setAttribute("title", "Copied!");
       let tooltip;
       if (window.bootstrap) {
         button.setAttribute("data-bs-toggle", "tooltip");
         button.setAttribute("data-bs-placement", "left");
-        button.setAttribute("data-bs-title", "Copié");
+        button.setAttribute("data-bs-title", "Copied!");
         tooltip = new bootstrap.Tooltip(button, 
           { trigger: "manual", 
             customClass: "code-copy-button-tooltip",
@@ -371,7 +461,7 @@ Information de session
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp("https:\/\/nbc\.github\.io");
+        var filterRegex = new RegExp("https:\/\/nbc\.github\.io\/en");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }

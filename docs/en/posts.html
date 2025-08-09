@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="fr" xml:lang="fr">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<link rel="alternate" hreflang="fr" href="https://nbc.github.io/index.html" />
-<link rel="alternate" hreflang="en" href="https://nbc.github.io/en/index.en.html" />
+<link rel="alternate" hreflang="fr" href="https://nbc.github.io/posts.html" />
+<link rel="alternate" hreflang="en" href="https://nbc.github.io/en/posts.en.html" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta name="generator" content="quarto-1.7.31">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>Duckdb, R et autres – duckdb, de R et autres</title>
+<title>Blog – duckdb, R and others</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,7 +22,7 @@ ul.task-list li input[type="checkbox"] {
 }
 </style>
 <script src="site_libs/quarto-nav/quarto-nav.js"></script><script src="site_libs/quarto-nav/headroom.min.js"></script><script src="site_libs/clipboard/clipboard.min.js"></script><script src="site_libs/quarto-search/autocomplete.umd.js"></script><script src="site_libs/quarto-search/fuse.min.js"></script><script src="site_libs/quarto-search/quarto-search.js"></script><meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-html/quarto.js" type="module"></script><script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script><script src="site_libs/quarto-html/popper.min.js"></script><script src="site_libs/quarto-html/tippy.umd.min.js"></script><script src="site_libs/quarto-html/anchor.min.js"></script><link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<script src="site_libs/quarto-listing/list.min.js"></script><script src="site_libs/quarto-listing/quarto-listing.js"></script><script src="site_libs/quarto-html/quarto.js" type="module"></script><script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script><script src="site_libs/quarto-html/popper.min.js"></script><script src="site_libs/quarto-html/tippy.umd.min.js"></script><script src="site_libs/quarto-html/anchor.min.js"></script><link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script><link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="site_libs/bootstrap/bootstrap-d449576b50b000f036b43da114d3fda5.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
@@ -40,19 +40,73 @@ ul.task-list li input[type="checkbox"] {
   ],
   "show-item-context": false,
   "language": {
-    "search-no-results-text": "Pas de résultats",
-    "search-matching-documents-text": "documents trouvés",
-    "search-copy-link-title": "Copier le lien vers la recherche",
-    "search-hide-matches-text": "Cacher les correspondances additionnelles",
-    "search-more-match-text": "correspondance de plus dans ce document",
-    "search-more-matches-text": "correspondances de plus dans ce document",
-    "search-clear-button-title": "Effacer",
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
     "search-text-placeholder": "",
-    "search-detached-cancel-button-title": "Annuler",
-    "search-submit-button-title": "Envoyer",
-    "search-label": "Recherche"
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
-}</script><link rel="stylesheet" href="styles.css">
+}</script><script>
+
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    const listingTargetEl = window.document.querySelector('#listing-listing .list');
+    if (!listingTargetEl) {
+      // No listing discovered, do not attach.
+      return; 
+    }
+
+    const options = {
+      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      
+      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
+    };
+
+    window['quarto-listings'] = window['quarto-listings'] || {};
+    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
+
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  });
+
+  window.addEventListener('hashchange',() => {
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  })
+  </script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script><link rel="stylesheet" href="styles.css">
+<link rel="alternate" type="application/rss+xml" title="duckdb, R and others" href="posts.xml" data-external="1">
 </head>
 <body class="nav-fixed quarto-light">
 
@@ -60,49 +114,66 @@ ul.task-list li input[type="checkbox"] {
   <header id="quarto-header" class="headroom fixed-top"><nav class="navbar navbar-expand-lg " data-bs-theme="dark"><div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">duckdb, de R et autres</span>
+    <span class="navbar-title">duckdb, R and others</span>
     </a>
   </div>
-            <div id="quarto-search" class="" title="Recherche"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Basculer la navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
 <li class="nav-item"><div class="dropdown" id="languages-links-parent">
-<button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="languages-button"><i class="bi bi-globe2"></i> Français</button><ul class="dropdown-menu" id="languages-links"><li><a class="dropdown-item" href="https://nbc.github.io/en/index.html" id="language-link-en">English</a></li></ul>
+<button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="languages-button"><i class="bi bi-globe2"></i> English</button><ul class="dropdown-menu" id="languages-links"><li><a class="dropdown-item" href="https://nbc.github.io/posts.html" id="language-link-fr">Français</a></li></ul>
 </div></li>
 <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
+    <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./posts.html"> 
+    <a class="nav-link active" href="./posts.html" aria-current="page"> 
 <span class="menu-text">Blog</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./links.html"> 
-<span class="menu-text">Liens</span></a>
+<span class="menu-text">Links</span></a>
   </li>  
 </ul>
 </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
 </div>
       </div> <!-- /container-fluid -->
-    </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+    </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         
-    </div>
+    <h5 class="quarto-listing-category-title">Categories</h5>
+<div class="quarto-listing-category category-default">
+<div class="category" data-category="">All <span class="quarto-category-count">(3)</span>
+</div>
+<div class="category" data-category="YXJyb3c=">arrow <span class="quarto-category-count">(2)</span>
+</div>
+<div class="category" data-category="YmVuY2htYXJr">benchmark <span class="quarto-category-count">(1)</span>
+</div>
+<div class="category" data-category="ZHVja2Ri">duckdb <span class="quarto-category-count">(2)</span>
+</div>
+<div class="category" data-category="Z2VvYXJyb3c=">geoarrow <span class="quarto-category-count">(1)</span>
+</div>
+<div class="category" data-category="Ug==">R <span class="quarto-category-count">(3)</span>
+</div>
+<div class="category" data-category="c2Y=">sf <span class="quarto-category-count">(1)</span>
+</div>
+</div>
+</div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
-<h1 class="title">Duckdb, R et autres</h1>
+<main class="content column-page-left" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
+<h1 class="title">Blog</h1>
 </div>
 
 
 
-<div class="quarto-title-meta">
+<div class="quarto-title-meta column-page-left">
 
     
   
@@ -111,14 +182,110 @@ ul.task-list li input[type="checkbox"] {
   
 
 
-</header><p>Je ne suis pas statisticien mais en tant qu’informaticien, une (trop petite) partie de mon boulot est d’en aider à traiter des données relativement massives.</p>
-<p>Ce site me sert à partager les trucs intéressants que j’ai découvert dans ce cadre ou à travers mes lectures. Ça parlera pas mal de R et de duckdb mais pas que.</p>
-<p>Aucune garantie de régularité ni d’exactitude.</p>
-<p>Pour le moment tout se passe dans <a href="./posts.html">la section blog</a>.</p>
+</header><div class="quarto-listing quarto-listing-container-default" id="listing-listing">
+<div class="list quarto-listing-default">
+<div class="quarto-post image-right" data-index="0" data-categories="UiUyQ2R1Y2tkYiUyQ2Fycm93JTJDc2YlMkNnZW9hcnJvdw==" data-listing-date-sort="1752278400000" data-listing-file-modified-sort="1754753282049" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="4" data-listing-word-count-sort="690">
+<div class="thumbnail"><a href="./posts/2025-07-10-st_as_sf/index.html" class="no-external">
 
+<img loading="lazy" src="https://duckdb.org/images/logo-dl/DuckDB_Logo-horizontal.svg" class="thumbnail-image"></a></div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./posts/2025-07-10-st_as_sf/index.html" class="no-external">From duckdb to st_to_sf</a>
+</h3>
+<div class="listing-categories">
 
+<div class="listing-category" onclick="window.quartoListingCategory('Ug=='); return false;">R</div>
 
-<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Retour au sommet</a></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+<div class="listing-category" onclick="window.quartoListingCategory('ZHVja2Ri'); return false;">duckdb</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('YXJyb3c='); return false;">arrow</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('c2Y='); return false;">sf</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('Z2VvYXJyb3c='); return false;">geoarrow</div>
+
+</div>
+<div class="delink listing-description"><a href="./posts/2025-07-10-st_as_sf/index.html" class="no-external">
+<p>How to convert a duckdb extraction into an <code>sf</code> object</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="./posts/2025-07-10-st_as_sf/index.html" class="no-external">
+<div class="listing-date">
+Jul 12, 2025
+</div>
+<div class="listing-author">
+Nicolas Chuche
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="1" data-categories="UiUyQ2R1Y2tkYiUyQ2Fycm93" data-listing-date-sort="1752192000000" data-listing-file-modified-sort="1754753292597" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="301">
+<div class="thumbnail"><a href="./posts/2025-07-10-to_arrow_bad/index.html" class="no-external">
+
+<img loading="lazy" src="https://duckplyr.tidyverse.org/logo.png" class="thumbnail-image"></a></div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./posts/2025-07-10-to_arrow_bad/index.html" class="no-external">Comparison between arrow::to_arrow() and duckplyr for writing Parquet files</a>
+</h3>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('Ug=='); return false;">R</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('ZHVja2Ri'); return false;">duckdb</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('YXJyb3c='); return false;">arrow</div>
+
+</div>
+<div class="delink listing-description"><a href="./posts/2025-07-10-to_arrow_bad/index.html" class="no-external">
+<p>Why You Should Avoid arrow::to_arrow() with DuckDB + dplyr</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="./posts/2025-07-10-to_arrow_bad/index.html" class="no-external">
+<div class="listing-date">
+Jul 11, 2025
+</div>
+<div class="listing-author">
+Nicolas Chuche
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="2" data-categories="UiUyQ2JlbmNobWFyaw==" data-listing-date-sort="1752105600000" data-listing-file-modified-sort="1754753272448" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="117">
+<div class="thumbnail"><a href="./posts/2025-07-10-benchmark/index.html" class="no-external">
+
+<img loading="lazy" src="https://duckdb.org/images/logo-dl/DuckDB_Logo-horizontal.svg" class="thumbnail-image"></a></div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./posts/2025-07-10-benchmark/index.html" class="no-external">Comparing DuckDB/Arrow Performance</a>
+</h3>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('Ug=='); return false;">R</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('YmVuY2htYXJr'); return false;">benchmark</div>
+
+</div>
+<div class="delink listing-description"><a href="./posts/2025-07-10-benchmark/index.html" class="no-external">
+<p>How to evaluate memory and CPU usage for long-running processes in duckdb/arrow</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="./posts/2025-07-10-benchmark/index.html" class="no-external">
+<div class="listing-date">
+Jul 10, 2025
+</div>
+<div class="listing-author">
+Nicolas Chuche
+</div>
+</a>
+</div>
+</div>
+</div>
+<div class="listing-no-matching d-none">No matching items</div>
+</div>
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
     const anchorJS = new window.AnchorJS();
@@ -143,12 +310,12 @@ ul.task-list li input[type="checkbox"] {
       // flash "checked"
       button.classList.add('code-copy-button-checked');
       var currentTitle = button.getAttribute("title");
-      button.setAttribute("title", "Copié");
+      button.setAttribute("title", "Copied!");
       let tooltip;
       if (window.bootstrap) {
         button.setAttribute("data-bs-toggle", "tooltip");
         button.setAttribute("data-bs-placement", "left");
-        button.setAttribute("data-bs-title", "Copié");
+        button.setAttribute("data-bs-title", "Copied!");
         tooltip = new bootstrap.Tooltip(button, 
           { trigger: "manual", 
             customClass: "code-copy-button-tooltip",
@@ -190,7 +357,7 @@ ul.task-list li input[type="checkbox"] {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp("https:\/\/nbc\.github\.io");
+        var filterRegex = new RegExp("https:\/\/nbc\.github\.io\/en");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
