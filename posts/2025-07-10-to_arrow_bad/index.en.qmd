@@ -3,7 +3,7 @@ title: "Comparison between arrow::to_arrow() and duckplyr for writing Parquet fi
 description: "Why You Should Avoid arrow::to_arrow() with DuckDB + dplyr"
 lang: en
 date: 2025-07-11
-categories: [duckdb, arrow]
+categories: [R, duckdb, arrow]
 image: https://duckplyr.tidyverse.org/logo.png 
 draft: false
 ---

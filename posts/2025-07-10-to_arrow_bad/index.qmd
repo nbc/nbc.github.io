@@ -2,7 +2,7 @@
 title: "Comparaison entre arrow::to_arrow() et duckplyr pour écrire du parquet"
 description: "Pourquoi éviter arrow::to_arrow() avec DuckDB + dplyr"
 date: 2025-07-11
-categories: [duckdb, arrow]
+categories: [R, duckdb, arrow]
 image: https://duckplyr.tidyverse.org/logo.png 
 draft: false # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
 ---

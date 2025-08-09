@@ -3,7 +3,7 @@ title: "Comparing DuckDB/Arrow Performance"
 description: "How to evaluate memory and CPU usage for long-running processes in duckdb/arrow"
 lang: en
 date: 2025-07-10
-categories: [timemoir, benchmark]
+categories: [R, benchmark]
 image: https://duckdb.org/images/logo-dl/DuckDB_Logo-horizontal.svg
 draft: false # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
 ---

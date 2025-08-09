@@ -3,7 +3,7 @@ title: "From duckdb to st_to_sf"
 description: "How to convert a duckdb extraction into an `sf` object"
 lang: en
 date: 2025-07-12
-categories: [duckdb, arrow, sf, geoarrow]
+categories: [R, duckdb, arrow, sf, geoarrow]
 image: https://duckdb.org/images/logo-dl/DuckDB_Logo-horizontal.svg
 draft: false # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
 ---
