@@ -102,7 +102,7 @@ plot(res)
 
 ---
 
-On the server I use, the `duckplyr` version is **6× faster** than the `arrow` version and uses **half the memory**, performing on par with pure DuckDB.
+On the server I use, the `duckplyr` version is **9× faster** than the `arrow` version and uses **half the memory**, performing on par with pure DuckDB (for this very simple test case).
 
 ## Conclusion
 
