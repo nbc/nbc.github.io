@@ -1,13 +1,13 @@
 ---
-title: "Pourquoi éviter arrow::to_arrow() avec DuckDB + dplyr"
-description: "Pourquoi utiliser `arrow::to_arrow` est une mauvaise idée avec `dplyr::tbl`"
+title: "Comparaison entre arrow::to_arrow() et duckplyr pour écrire du parquet"
+description: "Pourquoi éviter arrow::to_arrow() avec DuckDB + dplyr"
 date: 2025-07-11
 categories: [duckdb, arrow]
 image: https://duckplyr.tidyverse.org/logo.png 
 draft: false # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
 ---
 
-Une syntaxe souvent recommandée pour écrire un fichier parquet après des ordres `dplyr::tbl` est d'utiliser `arrow::to_arrow` avec `arrow::write_dataset` ou `arrow::write_parquet` :
+Une syntaxe souvent recommandée pour écrire un fichier parquet après des ordres `dplyr::tbl` avec `duckdb` est d'utiliser `arrow::to_arrow` avec `arrow::write_dataset` ou `arrow::write_parquet` :
 
 ```{r}
 #| eval: false
@@ -17,7 +17,7 @@ tbl(con, "read_parquet('geo.parquet')") |>
   arrow::write_dataset("mon_dataset")
 ```
 
-Cette syntaxe fonctionne toujours mais le nouveau package [duckplyr](https://duckplyr.tidyverse.org/index.html) propose une méthode beaucoup plus efficace :
+Si cette syntaxe fonctionne le nouveau package [duckplyr](https://duckplyr.tidyverse.org/index.html) propose une méthode beaucoup plus efficace :
 
 ```{r}
 #| eval: false
@@ -29,10 +29,10 @@ tbl(con, "read_parquet('geo.parquet')") |>
   duckplyr::compute_parquet("my_tbl.parquet") # <2>
 ```  
 
-1. converti l'objet retourné par `tbl` en objet lisible par `duckplyr`
-2. écrit le fichier parquet
+1. [`duckplyr::as_duckdb_tibble`](https://duckplyr.tidyverse.org/reference/duckdb_tibble.html) converti l'objet retourné par `tbl` en objet lisible par `duckplyr`
+2. [`duckplyr::compute_parquet`](https://duckplyr.tidyverse.org/reference/compute_parquet.html) écrit le fichier parquet
 
-Les deux lignes fonctionnent de la même façon que celle de `arrow` en étant **beaucoup plus efficace**.
+Les deux lignes fonctionnent de la même façon que celle de `arrow` mais la conversion d'un objet duckdb en objet duckplyr est **beaucoup plus efficace**.
 
 ## Une comparaison rapide
 
