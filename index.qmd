@@ -1,9 +1,11 @@
 ---
-title: "Duck, R et tout le reste"
+title: "Duckdb, R et autres"
 ---
 
-Je ne suis pas statisticien mais en tant que bon geek j'aime bien fouiller dans les entrailles de `duckdb` et de `R`. 
+Je ne suis pas statisticien mais en tant qu'informaticien, une (trop petite) partie de mon boulot est d'en aider à traiter des données relativement massives.
 
-Après avoir produit un certain nombre de snippets dans différents gitlab, j'essaye de centraliser mes notes (plus ou moins) en vrac sur ce site. Aucune garantie de régularité, (à priori) pas de longs posts à la mode des années 2000/2010 mais plutôt un micro-blogging quand je trouverais des sujets intéressants.
+Ce site me sert à partager les trucs intéressants que j'ai découvert dans ce cadre ou à travers mes lectures. Ça parlera pas mal de R et de duckdb mais pas que.
 
-Pour le moment tout se passe dans [cette page](posts.qmd)
+Aucune garantie de régularité ni d'exactitude.
+
+Pour le moment tout se passe dans [la section blog](posts.qmd).

@@ -1,0 +1,14 @@
+---
+title: "Duckdb, R and everything"
+lang: en
+---
+
+I’m not a statistician, but as a software guy, part of my job (sadly, a pretty small part) is helping statisticians wrangle fairly large datasets.
+
+This is where I share interesting stuff I’ve picked up along the way or stumbled upon in my reading. You’ll see a lot about R and DuckDB, but not exclusively.
+
+No promises on posting frequency or absolute accuracy.
+
+For now, it’s all happening in the [blog section](posts.qmd).
+
+Heads up: the english part is translated from French with a little help from AI.

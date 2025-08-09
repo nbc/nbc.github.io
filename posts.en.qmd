@@ -1,13 +1,14 @@
 ---
 title: "Blog"
+lang: en
 listing: 
   contents: posts/
   include:
-    lang: fr
+    lang: en
   type: default
   sort: "date desc"
   categories: true
-  feed: true  
+  feed: true
 page-layout: full
 title-block-banner: false
 toc: true
