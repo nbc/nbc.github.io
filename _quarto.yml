@@ -3,21 +3,18 @@ project:
   output-dir: docs
   
 website:
-  title: "Au sujet de duckdb, de R et de tout le reste"
+  title: "duckdb, de R et autres"
   site-url: https://nbc.github.io
-  description: Quelques expérimentations généralement sur les données massives
+  description: Quelques notes généralement sur les données massives mais pas que
   page-footer:
     left: |
       Sauf mention contraire, le contenu est sous licence
       [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
     right: "© 2025 NBC"  
-  navbar:
-    left:
-      - href: index.qmd
-        text: Home
-      - posts.qmd   
   back-to-top-navigation: true
-
+  navbar:
+    right: []
+    
 format:
   html:
     theme:
@@ -26,4 +23,15 @@ format:
     css: styles.css
     toc: true
 
-
+babelquarto:
+  languagelinks: navbar
+  languagecodes:
+  - name: en
+    text: "English"
+  - name: fr
+    text: "Français"
+  mainlanguage: 'fr'
+  languages: ['en']
+title-en: duckdb, R and others
+description-en: Some notes, often on big data but not only
+lang: fr

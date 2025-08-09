@@ -1,0 +1,7 @@
+website:
+  navbar:
+    right:
+      - href: index.qmd
+        text: Home
+      - href: posts.qmd   
+        text: Blog
