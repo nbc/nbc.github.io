@@ -26,7 +26,7 @@ con <- dbConnect(duckdb())
 
 tbl(con, "read_parquet('geo.parquet')") |>
   ...
-  duckplyr::as_duckdb_tibble() |> # <1>
+  duckplyr::as_duckdb_tibble() |>             # <1>
   duckplyr::compute_parquet("my_tbl.parquet") # <2>
 ```
 
