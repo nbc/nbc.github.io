@@ -3,9 +3,9 @@ project:
   output-dir: docs
   
 website:
-  title: "duckdb, de R et autres"
+  title: "duckdb, R et autres"
   site-url: https://nbc.github.io
-  description: Quelques notes généralement sur les données massives mais pas que
+  description: Quelques notes souvent sur les données massives mais pas que
   page-footer:
     left: |
       Sauf mention contraire, le contenu est sous licence
