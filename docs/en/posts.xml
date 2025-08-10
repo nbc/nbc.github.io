@@ -970,30 +970,30 @@ font-style: inherit;">kable</span>()</span></code></pre></div>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">with_arrow()</td>
-<td style="text-align: right;">61.147</td>
+<td style="text-align: right;">125.123</td>
 <td style="text-align: left;">NA</td>
-<td style="text-align: right;">149664</td>
-<td style="text-align: right;">21835576</td>
-<td style="text-align: right;">76.045</td>
-<td style="text-align: right;">17.691</td>
+<td style="text-align: right;">153200</td>
+<td style="text-align: right;">21206428</td>
+<td style="text-align: right;">157.164</td>
+<td style="text-align: right;">50.598</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">with_copy_to()</td>
-<td style="text-align: right;">7.480</td>
+<td style="text-align: right;">28.969</td>
 <td style="text-align: left;">NA</td>
-<td style="text-align: right;">149104</td>
-<td style="text-align: right;">9096224</td>
-<td style="text-align: right;">66.407</td>
-<td style="text-align: right;">9.944</td>
+<td style="text-align: right;">158720</td>
+<td style="text-align: right;">11870840</td>
+<td style="text-align: right;">157.578</td>
+<td style="text-align: right;">58.525</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">with_duckplyr()</td>
-<td style="text-align: right;">7.013</td>
+<td style="text-align: right;">33.704</td>
 <td style="text-align: left;">NA</td>
-<td style="text-align: right;">149104</td>
-<td style="text-align: right;">11818744</td>
-<td style="text-align: right;">54.990</td>
-<td style="text-align: right;">10.564</td>
+<td style="text-align: right;">164088</td>
+<td style="text-align: right;">11933724</td>
+<td style="text-align: right;">128.338</td>
+<td style="text-align: right;">50.864</td>
 </tr>
 </tbody>
 </table>
@@ -1004,7 +1004,7 @@ font-style: inherit;">plot</span>(res)</span></code></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://nbc.github.io/en/posts/2025-07-10-to_arrow_bad/index_files/figure-html/output_benchmark-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="https://nbc.github.io/en/posts/2025-07-10-to_arrow_bad/index.en_files/figure-html/output_benchmark-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
