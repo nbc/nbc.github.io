@@ -17,7 +17,7 @@ tbl(con, "read_parquet('geo.parquet')") |>
   arrow::write_dataset("mon_dataset")
 ```
 
-Si cette syntaxe fonctionne le nouveau package [duckplyr](https://duckplyr.tidyverse.org/index.html) propose une méthode beaucoup plus efficace :
+Si cette syntaxe fonctionne et sans matérialiser les données, le nouveau package [duckplyr](https://duckplyr.tidyverse.org/index.html) propose une méthode beaucoup plus efficace :
 
 ```{r}
 #| eval: false
@@ -32,7 +32,7 @@ tbl(con, "read_parquet('geo.parquet')") |>
 1. [`duckplyr::as_duckdb_tibble`](https://duckplyr.tidyverse.org/reference/duckdb_tibble.html) converti l'objet retourné par `tbl` en objet lisible par `duckplyr`
 2. [`duckplyr::compute_parquet`](https://duckplyr.tidyverse.org/reference/compute_parquet.html) écrit le fichier parquet
 
-Les deux lignes fonctionnent de la même façon que celle de `arrow` mais la conversion d'un objet duckdb en objet duckplyr est **beaucoup plus efficace**.
+Les deux lignes fonctionnent de la même façon que celles de `arrow`, sans matérialiser les données, mais la conversion d'un objet duckdb en objet duckplyr est **beaucoup plus efficace**.
 
 ## Une comparaison rapide
 
